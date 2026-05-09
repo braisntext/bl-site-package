@@ -2,6 +2,7 @@
   "name": "bl-site-package",
   "version": "1.0.0",
   "description": "Deployable web presence package for SMB clients",
+  "type": "module",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
