@@ -66,6 +66,34 @@ function constructionHTML() {
   return '<div class="construction-wrap"><div class="construction-icon">🚧</div><h1>Página en construcción</h1><p>Estamos preparando esta página. Vuelve pronto.</p><a href="/" class="site-btn">Volver al inicio</a></div>';
 }
 
+function contactHTML(cfg) {
+  var title = cfg.page_contacto_title || "Contacto";
+  var subtitle =
+    cfg.page_contacto_subtitle ||
+    "Escríbenos y te responderemos lo antes posible.";
+  var desc =
+    cfg.page_contacto_desc ||
+    "Cuéntanos qué necesitas y te contactaremos con una propuesta clara.";
+  return (
+    '<main class="site-page"><div class="site-page-inner"><h1>' +
+    title +
+    "</h1>" +
+    '<p class="site-page-subtitle">' +
+    subtitle +
+    "</p>" +
+    '<p class="site-page-desc">' +
+    desc +
+    "</p>" +
+    '<form class="site-contact-form" id="contact-form">' +
+    '<input type="text" id="contact-name" placeholder="Nombre" required>' +
+    '<input type="email" id="contact-email" placeholder="Email" required>' +
+    '<textarea rows="5" id="contact-message" placeholder="Mensaje" required></textarea>' +
+    '<button type="submit" class="site-btn" id="contact-submit">Enviar</button>' +
+    '<p class="site-form-msg" id="contact-form-msg" aria-live="polite"></p>' +
+    "</form></div></main>"
+  );
+}
+
 function footerHTML(cfg) {
   var company = cfg.company_name || "";
   var year = new Date().getFullYear();
@@ -149,24 +177,7 @@ window.renderPage = function (page) {
       document.title =
         (cfg.page_contacto_title || "Contacto") +
         (cfg.company_name ? " — " + cfg.company_name : "");
-      if (!cfg.page_contacto_title) {
-        content = constructionHTML();
-      } else {
-        content =
-          '<main class="site-page"><div class="site-page-inner"><h1>' +
-          cfg.page_contacto_title +
-          "</h1>" +
-          (cfg.page_contacto_subtitle
-            ? '<p class="site-page-subtitle">' +
-              cfg.page_contacto_subtitle +
-              "</p>"
-            : "") +
-          (cfg.page_contacto_desc
-            ? '<p class="site-page-desc">' + cfg.page_contacto_desc + "</p>"
-            : "") +
-          '<form class="site-contact-form" onsubmit="return false;"><input type="text" placeholder="Tu nombre" required><input type="email" placeholder="Tu email" required><textarea rows="4" placeholder="Tu mensaje" required></textarea><button type="submit" class="site-btn">Enviar mensaje</button></form>' +
-          "</div></main>";
-      }
+      content = contactHTML(cfg);
     } else if (page === "blog") {
       document.title =
         (cfg.page_blog_title || "Blog") +
@@ -184,9 +195,61 @@ window.renderPage = function (page) {
     html += content + footerHTML(cfg);
     root.innerHTML = html;
 
+    if (page === "contacto") initContactForm();
     if (page === "blog") loadBlogPosts();
   });
 };
+
+function initContactForm() {
+  var form = document.getElementById("contact-form");
+  if (!form) return;
+
+  var nameInput = document.getElementById("contact-name");
+  var emailInput = document.getElementById("contact-email");
+  var messageInput = document.getElementById("contact-message");
+  var submitButton = document.getElementById("contact-submit");
+  var msg = document.getElementById("contact-form-msg");
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    submitButton.disabled = true;
+    msg.textContent = "";
+
+    fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: nameInput.value.trim(),
+        email: emailInput.value.trim(),
+        message: messageInput.value.trim(),
+      }),
+    })
+      .then(function (r) {
+        return r.json().then(function (data) {
+          return { ok: r.ok, data: data };
+        });
+      })
+      .then(function (result) {
+        if (!result.ok || !result.data.success) {
+          msg.textContent =
+            result.data.error || "No se pudo enviar el mensaje.";
+          msg.style.color = "var(--accent)";
+          return;
+        }
+
+        form.reset();
+        msg.textContent = "Gracias. Hemos recibido tu mensaje.";
+        msg.style.color = "var(--accent)";
+      })
+      .catch(function () {
+        msg.textContent = "No se pudo enviar el mensaje.";
+        msg.style.color = "var(--accent)";
+      })
+      .finally(function () {
+        submitButton.disabled = false;
+      });
+  });
+}
 
 function loadBlogPosts() {
   fetch("/api/blog/posts")

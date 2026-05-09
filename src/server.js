@@ -1,12 +1,13 @@
 import express from "express";
 import cors from "cors";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
-import { mkdirSync } from "fs";
-import db, { getConfig } from "./db/database.js";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+import { mkdirSync } from "node:fs";
+import { getConfig } from "./db/database.js";
 import authRouter from "./api/auth.js";
 import chatRouter from "./api/chat.js";
 import blogRouter from "./api/blog.js";
+import contactRouter from "./api/contact.js";
 import setupRouter from "./api/setup.js";
 import siteRouter from "./api/site.js";
 
@@ -34,6 +35,7 @@ app.use("/uploads", express.static(uploadsDir));
 app.use("/api/auth", authRouter);
 app.use("/api/chat", chatRouter);
 app.use("/api/blog", blogRouter);
+app.use("/api/contact", contactRouter);
 app.use("/api/setup", setupRouter);
 app.use("/api/site", siteRouter);
 

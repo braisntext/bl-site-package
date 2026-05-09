@@ -12,11 +12,11 @@ Paquete web deployable para clientes SMB. Incluye sitio público, panel de gesti
 
 ## Variables de entorno opcionales
 
-| Variable | Descripción | Default |
-|----------|-------------|---------|
-| `PORT` | Puerto del servidor | `3000` |
-| `CONTENT_AGENT_MODEL` | Modelo OpenRouter para el agente | `google/gemini-2.0-flash-lite` |
-| `DB_PATH` | Ruta a la base de datos SQLite | `./data/app.db` |
+| Variable              | Descripción                      | Default                                 |
+| --------------------- | -------------------------------- | --------------------------------------- |
+| `PORT`                | Puerto del servidor              | `3000`                                  |
+| `CONTENT_AGENT_MODEL` | Modelo OpenRouter para el agente | `meta-llama/llama-3.1-8b-instruct:free` |
+| `DB_PATH`             | Ruta a la base de datos SQLite   | `./data/app.db`                         |
 
 Todas las demás variables (contraseña, API key, nombre empresa) se configuran desde el wizard en `/setup`.
 

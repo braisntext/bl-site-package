@@ -74,6 +74,7 @@ document.addEventListener("DOMContentLoaded", function () {
       s.hidden = !active;
     });
     if (name === "blog") loadArticles();
+    if (name === "messages") loadMessages();
     if (name === "misite") initMiSite();
   }
 
@@ -313,6 +314,46 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       })
       .catch(function () {});
+  }
+
+  function loadMessages() {
+    fetch("/api/contact", {
+      headers: { Authorization: "Bearer " + token, "x-panel-token": token },
+    })
+      .then(function (r) {
+        return r.json();
+      })
+      .then(function (data) {
+        var list = document.getElementById("messages-list");
+        var messages = data.messages || [];
+        if (!messages.length) {
+          list.innerHTML =
+            '<p style="color:var(--text-muted);padding:2rem 0">Todavía no hay mensajes.</p>';
+          return;
+        }
+        list.innerHTML = messages
+          .map(function (m) {
+            return (
+              '<article class="message-card"><div class="message-card-header"><span class="message-card-name">' +
+              m.name +
+              '</span><span class="message-card-email">' +
+              m.email +
+              '</span><span class="message-card-date">' +
+              new Date(m.created_at).toLocaleString("es-ES") +
+              '</span></div><div class="message-card-body">' +
+              m.message +
+              "</div></article>"
+            );
+          })
+          .join("");
+      })
+      .catch(function () {
+        var list = document.getElementById("messages-list");
+        if (list) {
+          list.innerHTML =
+            '<p style="color:var(--text-muted);padding:2rem 0">No se pudieron cargar los mensajes.</p>';
+        }
+      });
   }
 
   // ── MI SITIO WEB ─────────────────────────────────────────────────

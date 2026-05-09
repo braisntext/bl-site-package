@@ -1,445 +1,1188 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es" data-theme="light">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Panel de cliente">
-  <title>Mi panel</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&display=swap">
-  <style>
-    /* ── CSS variables base (no depende de style.css del sitio público) ── */
-    :root {
-      --font-body: 'Inter', system-ui, sans-serif;
-      --bg-base: #f7f6f2;
-      --bg-surface: #ffffff;
-      --bg-subtle: #f0ede8;
-      --border: #dcd9d5;
-      --text-primary: #1a1a1a;
-      --text-secondary: #555555;
-      --text-muted: #888888;
-      --accent: #B8391C;
-      --accent-hover: #9e3018;
-      --accent-light: #fdeae5;
-      --error: #a12c2c;
-      --radius-sm: 4px;
-      --radius-md: 8px;
-      --shadow-sm: 0 1px 4px rgba(0,0,0,.06);
-      --shadow-md: 0 4px 12px rgba(0,0,0,.08);
-    }
-  </style>
-  <link rel="stylesheet" href="/style-panel.css">
-</head>
-<body>
-
-<!-- LOGIN SCREEN -->
-<div id="login-screen" class="login-screen visible">
-  <div class="login-card">
-    <div class="login-header">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" width="40" height="40" class="login-logo">
-        <line x1="16" y1="14" x2="19" y2="50" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>
-        <line x1="48" y1="14" x2="45" y2="50" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>
-        <circle cx="28" cy="32" r="3.5" fill="currentColor"/>
-        <circle cx="36" cy="32" r="3.5" fill="currentColor"/>
-      </svg>
-      <h1 class="login-title">Panel de cliente</h1>
-      <p class="login-subtitle">Introduce tu contraseña para acceder</p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Panel de cliente" />
+    <title>Mi panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&display=swap"
+    />
+    <style>
+      /* ── CSS variables base (no depende de style.css del sitio público) ── */
+      :root {
+        --font-body: "Inter", system-ui, sans-serif;
+        --bg-base: #f7f6f2;
+        --bg-surface: #ffffff;
+        --bg-subtle: #f0ede8;
+        --border: #dcd9d5;
+        --text-primary: #1a1a1a;
+        --text-secondary: #555555;
+        --text-muted: #888888;
+        --accent: #b8391c;
+        --accent-hover: #9e3018;
+        --accent-light: #fdeae5;
+        --error: #a12c2c;
+        --radius-sm: 4px;
+        --radius-md: 8px;
+        --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.06);
+        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+      }
+    </style>
+    <link rel="stylesheet" href="/style-panel.css" />
+  </head>
+  <body>
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="login-screen visible">
+      <div class="login-card">
+        <div class="login-header">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 64 64"
+            fill="none"
+            width="40"
+            height="40"
+            class="login-logo"
+          >
+            <line
+              x1="16"
+              y1="14"
+              x2="19"
+              y2="50"
+              stroke="currentColor"
+              stroke-width="4.5"
+              stroke-linecap="round"
+            />
+            <line
+              x1="48"
+              y1="14"
+              x2="45"
+              y2="50"
+              stroke="currentColor"
+              stroke-width="4.5"
+              stroke-linecap="round"
+            />
+            <circle cx="28" cy="32" r="3.5" fill="currentColor" />
+            <circle cx="36" cy="32" r="3.5" fill="currentColor" />
+          </svg>
+          <h1 class="login-title">Panel de cliente</h1>
+          <p class="login-subtitle">Introduce tu contraseña para acceder</p>
+        </div>
+        <form id="login-form" class="login-form">
+          <div class="form-group">
+            <input
+              type="password"
+              id="panel-password"
+              placeholder="Contraseña"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+          <button type="submit" class="btn-primary login-button">Entrar</button>
+          <p id="login-error" class="login-error" hidden></p>
+        </form>
+      </div>
     </div>
-    <form id="login-form" class="login-form">
-      <div class="form-group">
-        <input type="password" id="panel-password" placeholder="Contraseña" autocomplete="current-password" required>
-      </div>
-      <button type="submit" class="btn-primary login-button">Entrar</button>
-      <p id="login-error" class="login-error" hidden></p>
-    </form>
-  </div>
-</div>
 
-<!-- PANEL APP -->
-<div id="panel-app" class="panel-app" hidden>
-
-  <!-- TOPBAR -->
-  <header id="panel-topbar" class="panel-topbar">
-    <div class="panel-topbar__inner">
-      <div class="panel-topbar__left">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" width="24" height="24" class="panel-logo">
-          <line x1="16" y1="14" x2="19" y2="50" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>
-          <line x1="48" y1="14" x2="45" y2="50" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>
-          <circle cx="28" cy="32" r="3.5" fill="currentColor"/>
-          <circle cx="36" cy="32" r="3.5" fill="currentColor"/>
-        </svg>
-        <span class="panel-topbar__company" id="company-name">Tu Empresa</span>
-      </div>
-      <div class="panel-topbar__right">
-        <span class="panel-badge">Cliente</span>
-        <button id="panel-logout" class="btn-ghost-sm" title="Cerrar sesión">Salir</button>
-      </div>
-    </div>
-  </header>
-
-  <!-- LAYOUT -->
-  <div class="panel-layout">
-
-    <!-- SIDEBAR -->
-    <nav id="panel-sidebar" class="panel-sidebar">
-      <div class="sidebar-logo">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" width="32" height="32">
-          <line x1="16" y1="14" x2="19" y2="50" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>
-          <line x1="48" y1="14" x2="45" y2="50" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>
-          <circle cx="28" cy="32" r="3.5" fill="currentColor"/>
-          <circle cx="36" cy="32" r="3.5" fill="currentColor"/>
-        </svg>
-        <span class="sidebar-company" id="sidebar-company">Tu Empresa</span>
-      </div>
-
-      <ul class="sidebar-nav">
-        <li><button class="sidebar-nav-item active" data-section="overview">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-          <span>Inicio</span>
-        </button></li>
-        <li><button class="sidebar-nav-item" data-section="chat">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          <span>Agente</span>
-        </button></li>
-        <li><button class="sidebar-nav-item" data-section="blog">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-          <span>Blog</span>
-        </button></li>
-        <li><button class="sidebar-nav-item" data-section="misite">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
-          <span>Mi sitio web</span>
-        </button></li>
-        <li><button class="sidebar-nav-item" data-section="servicio">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-          <span>Mi servicio</span>
-        </button></li>
-      </ul>
-
-      <div class="sidebar-footer">
-        <button id="sidebar-logout" class="sidebar-logout-btn">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-          <span>Cerrar sesión</span>
-        </button>
-      </div>
-    </nav>
-
-    <!-- CONTENT -->
-    <main id="panel-content" class="panel-content">
-
-      <!-- OVERVIEW -->
-      <section data-panel="overview" class="panel-section active">
-        <div class="section-header">
-          <h2 id="greeting">Buenos días</h2>
-          <p>¿Qué quieres hacer hoy?</p>
-        </div>
-        <div class="stats-grid">
-          <div class="stat-card"><div class="stat-number" id="stat-posts">—</div><div class="stat-label">Artículos publicados</div></div>
-          <div class="stat-card"><div class="stat-number" id="stat-service">✓</div><div class="stat-label">Servicio activo</div></div>
-          <div class="stat-card"><div class="stat-number">IA</div><div class="stat-label">Agente disponible</div></div>
-        </div>
-        <div class="quick-actions">
-          <h3>Acciones rápidas</h3>
-          <div class="action-card"><h4>📝 Crear un nuevo artículo</h4><p>Escribe tu próximo artículo y publícalo directamente en tu blog.</p><button class="btn-primary-sm action-button" data-action="create-article">Crear artículo</button></div>
-          <div class="action-card"><h4>✏️ Pedir ayuda al agente</h4><p>El agente de marketing IA te ayuda con ideas, textos y contenidos.</p><button class="btn-primary-sm action-button" data-action="edit-texts">Hablar con el agente</button></div>
-          <div class="action-card"><h4>📖 Ver mis artículos</h4><p>Revisa todos los artículos que has publicado en tu blog.</p><button class="btn-primary-sm action-button" data-action="view-blog">Ver blog</button></div>
-        </div>
-      </section>
-
-      <!-- CHAT -->
-      <section data-panel="chat" class="panel-section" hidden>
-        <div class="section-header">
-          <div class="section-title"><h2>Agente de marketing</h2><span class="status-badge">Online</span></div>
-          <p>Crea artículos, edita textos y mejora tu presencia online.</p>
-        </div>
-        <div class="chat-area">
-          <div id="chat-messages" class="chat-messages">
-            <div class="chat-message agent-message"><p>¡Hola! Soy tu agente de marketing. Estoy aquí para ayudarte a crear contenido y mejorar tu presencia online. ¿Qué necesitas hoy?</p></div>
+    <!-- PANEL APP -->
+    <div id="panel-app" class="panel-app" hidden>
+      <!-- TOPBAR -->
+      <header id="panel-topbar" class="panel-topbar">
+        <div class="panel-topbar__inner">
+          <div class="panel-topbar__left">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 64 64"
+              fill="none"
+              width="24"
+              height="24"
+              class="panel-logo"
+            >
+              <line
+                x1="16"
+                y1="14"
+                x2="19"
+                y2="50"
+                stroke="currentColor"
+                stroke-width="4.5"
+                stroke-linecap="round"
+              />
+              <line
+                x1="48"
+                y1="14"
+                x2="45"
+                y2="50"
+                stroke="currentColor"
+                stroke-width="4.5"
+                stroke-linecap="round"
+              />
+              <circle cx="28" cy="32" r="3.5" fill="currentColor" />
+              <circle cx="36" cy="32" r="3.5" fill="currentColor" />
+            </svg>
+            <span class="panel-topbar__company" id="company-name"
+              >Tu Empresa</span
+            >
           </div>
-          <div class="chat-suggestions">
-            <p class="suggestions-label">Sugerencias rápidas:</p>
-            <div class="suggestion-chips">
-              <button class="suggestion-chip" data-prompt="Quiero crear un nuevo artículo para el blog">Crear un artículo</button>
-              <button class="suggestion-chip" data-prompt="Mejora el texto principal de mi página de inicio">Mejorar textos web</button>
-              <button class="suggestion-chip" data-prompt="¿Qué temas debería cubrir en mi blog?">Ideas de contenido</button>
-            </div>
-          </div>
-          <div class="chat-input-area">
-            <textarea id="chat-input" placeholder="Escribe tu mensaje..." rows="3"></textarea>
-            <button id="chat-send" class="btn-primary-sm chat-send-btn">Enviar</button>
+          <div class="panel-topbar__right">
+            <span class="panel-badge">Cliente</span>
+            <a
+              class="panel-site-link"
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Ver sitio web <span aria-hidden="true">↗</span></a
+            >
+            <button
+              id="panel-logout"
+              class="btn-ghost-sm"
+              title="Cerrar sesión"
+            >
+              Salir
+            </button>
           </div>
         </div>
-      </section>
+      </header>
 
-      <!-- BLOG -->
-      <section data-panel="blog" class="panel-section" hidden>
-        <div class="section-header">
-          <div class="section-title"><h2>Blog</h2><button class="btn-primary-sm" id="new-article-btn">+ Nuevo artículo</button></div>
-          <p>Gestiona tus artículos publicados y borradores.</p>
-        </div>
-        <div id="article-form-wrap" class="article-form-wrap" hidden>
-          <div class="article-form-card">
-            <div class="article-form-header">
-              <h3 id="article-form-title">Nuevo artículo</h3>
-              <button id="article-form-close" class="btn-icon article-form-close" aria-label="Cerrar formulario">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <!-- LAYOUT -->
+      <div class="panel-layout">
+        <!-- SIDEBAR -->
+        <nav id="panel-sidebar" class="panel-sidebar">
+          <div class="sidebar-logo">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 64 64"
+              fill="none"
+              width="32"
+              height="32"
+            >
+              <line
+                x1="16"
+                y1="14"
+                x2="19"
+                y2="50"
+                stroke="currentColor"
+                stroke-width="4.5"
+                stroke-linecap="round"
+              />
+              <line
+                x1="48"
+                y1="14"
+                x2="45"
+                y2="50"
+                stroke="currentColor"
+                stroke-width="4.5"
+                stroke-linecap="round"
+              />
+              <circle cx="28" cy="32" r="3.5" fill="currentColor" />
+              <circle cx="36" cy="32" r="3.5" fill="currentColor" />
+            </svg>
+            <span class="sidebar-company" id="sidebar-company">Tu Empresa</span>
+          </div>
+
+          <ul class="sidebar-nav">
+            <li>
+              <button class="sidebar-nav-item active" data-section="overview">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="3" y="3" width="7" height="7" />
+                  <rect x="14" y="3" width="7" height="7" />
+                  <rect x="3" y="14" width="7" height="7" />
+                  <rect x="14" y="14" width="7" height="7" />
+                </svg>
+                <span>Inicio</span>
               </button>
-            </div>
-            <form id="article-form">
-              <input type="hidden" id="article-edit-id" value="">
-              <div class="form-group">
-                <label for="article-title-input">Título</label>
-                <input type="text" id="article-title-input" placeholder="Título del artículo" required>
-              </div>
-              <div class="form-group" style="margin-top:1rem">
-                <label for="article-content-input">Contenido</label>
-                <textarea id="article-content-input" rows="10" placeholder="Escribe el contenido del artículo aquí..."></textarea>
-              </div>
-              <div class="form-group" style="margin-top:1rem">
-                <label for="article-status-select">Estado</label>
-                <select id="article-status-select" style="width:auto;padding:8px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-base);color:var(--text-primary);cursor:pointer">
-                  <option value="draft">Borrador</option>
-                  <option value="published">Publicado</option>
-                </select>
-              </div>
-              <div style="margin-top:1.5rem;display:flex;gap:1rem;align-items:center">
-                <button type="submit" class="btn-primary-sm" id="article-form-submit">Guardar artículo</button>
-                <button type="button" class="btn-ghost-sm" id="article-form-cancel">Cancelar</button>
-                <span id="article-form-msg" style="font-size:0.8125rem;color:var(--accent);margin-left:.5rem" hidden></span>
-              </div>
-            </form>
+            </li>
+            <li>
+              <button class="sidebar-nav-item" data-section="chat">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                  />
+                </svg>
+                <span>Agente</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-nav-item" data-section="blog">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                  <path
+                    d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
+                  />
+                </svg>
+                <span>Blog</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-nav-item" data-section="messages">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                  />
+                  <path d="M8 8h8" />
+                  <path d="M8 12h5" />
+                </svg>
+                <span>Mensajes</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-nav-item" data-section="misite">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <path d="M3 9h18" />
+                  <path d="M9 21V9" />
+                </svg>
+                <span>Mi sitio web</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-nav-item" data-section="servicio">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 6v6l4 2" />
+                </svg>
+                <span>Mi servicio</span>
+              </button>
+            </li>
+          </ul>
+
+          <div class="sidebar-footer">
+            <button id="sidebar-logout" class="sidebar-logout-btn">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"
+                />
+              </svg>
+              <span>Cerrar sesión</span>
+            </button>
           </div>
-        </div>
-        <div id="articles-list"></div>
-      </section>
+        </nav>
 
-      <!-- MI SITIO WEB -->
-      <section data-panel="misite" class="panel-section" hidden>
-        <div class="section-header">
-          <h2>Mi sitio web</h2>
-          <p>Configura el contenido y la apariencia de tu sitio web.</p>
-        </div>
+        <!-- CONTENT -->
+        <main id="panel-content" class="panel-content">
+          <!-- OVERVIEW -->
+          <section data-panel="overview" class="panel-section active">
+            <div class="section-header">
+              <h2 id="greeting">Buenos días</h2>
+              <p>¿Qué quieres hacer hoy?</p>
+            </div>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-number" id="stat-posts">—</div>
+                <div class="stat-label">Artículos publicados</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number" id="stat-service">✓</div>
+                <div class="stat-label">Servicio activo</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number">IA</div>
+                <div class="stat-label">Agente disponible</div>
+              </div>
+            </div>
+            <div class="quick-actions">
+              <h3>Acciones rápidas</h3>
+              <div class="action-card">
+                <h4>📝 Crear un nuevo artículo</h4>
+                <p>
+                  Escribe tu próximo artículo y publícalo directamente en tu
+                  blog.
+                </p>
+                <button
+                  class="btn-primary-sm action-button"
+                  data-action="create-article"
+                >
+                  Crear artículo
+                </button>
+              </div>
+              <div class="action-card">
+                <h4>✏️ Pedir ayuda al agente</h4>
+                <p>
+                  El agente de marketing IA te ayuda con ideas, textos y
+                  contenidos.
+                </p>
+                <button
+                  class="btn-primary-sm action-button"
+                  data-action="edit-texts"
+                >
+                  Hablar con el agente
+                </button>
+              </div>
+              <div class="action-card">
+                <h4>📖 Ver mis artículos</h4>
+                <p>Revisa todos los artículos que has publicado en tu blog.</p>
+                <button
+                  class="btn-primary-sm action-button"
+                  data-action="view-blog"
+                >
+                  Ver blog
+                </button>
+              </div>
+            </div>
+          </section>
 
-        <!-- TABS internos -->
-        <div class="misite-tabs">
-          <button class="misite-tab active" data-tab="logo">Logo</button>
-          <button class="misite-tab" data-tab="paginas">Páginas</button>
-          <button class="misite-tab" data-tab="agente">Modelo IA</button>
-        </div>
-
-        <!-- TAB: LOGO -->
-        <div class="misite-panel active" id="misite-logo">
-          <div class="misite-block">
-            <h3>Logo de la empresa</h3>
-            <p class="misite-hint">Sube tu logo en PNG, JPG, SVG o WebP. Máximo 2 MB.</p>
-            <div class="logo-upload-area" id="logo-drop-area">
-              <div id="logo-preview-wrap">
-                <div class="logo-placeholder" id="logo-placeholder">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                  <span>Sin logo</span>
+          <!-- CHAT -->
+          <section data-panel="chat" class="panel-section" hidden>
+            <div class="section-header">
+              <div class="section-title">
+                <h2>Agente de marketing</h2>
+                <span class="status-badge">Online</span>
+              </div>
+              <p>Crea artículos, edita textos y mejora tu presencia online.</p>
+            </div>
+            <div class="chat-area">
+              <div id="chat-messages" class="chat-messages">
+                <div class="chat-message agent-message">
+                  <p>
+                    ¡Hola! Soy tu agente de marketing. Estoy aquí para ayudarte
+                    a crear contenido y mejorar tu presencia online. ¿Qué
+                    necesitas hoy?
+                  </p>
                 </div>
-                <img id="logo-preview" src="" alt="Logo" style="display:none;max-height:80px;max-width:240px;object-fit:contain;">
               </div>
-              <label class="site-upload-btn" for="logo-file-input">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                Subir logo
-              </label>
-              <input type="file" id="logo-file-input" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display:none">
-            </div>
-            <p id="logo-upload-msg" style="font-size:0.8125rem;margin-top:0.5rem;display:none"></p>
-          </div>
-        </div>
-
-        <!-- TAB: PÁGINAS -->
-        <div class="misite-panel" id="misite-paginas" style="display:none">
-          <div class="misite-pages-tabs">
-            <button class="misite-page-tab active" data-page="index">Inicio</button>
-            <button class="misite-page-tab" data-page="quienes">Quiénes somos</button>
-            <button class="misite-page-tab" data-page="servicios">Servicios</button>
-            <button class="misite-page-tab" data-page="contacto">Contacto</button>
-            <button class="misite-page-tab" data-page="blog">Blog</button>
-          </div>
-          <div id="misite-page-form" class="misite-page-form">
-            <!-- rendered by JS -->
-          </div>
-          <div style="margin-top:1.5rem;display:flex;gap:1rem;align-items:center">
-            <button class="btn-primary-sm" id="save-page-texts">Guardar cambios</button>
-            <span id="save-page-msg" style="font-size:0.8125rem;display:none"></span>
-          </div>
-        </div>
-
-        <!-- TAB: MODELO IA -->
-        <div class="misite-panel" id="misite-agente" style="display:none">
-          <div class="misite-block">
-            <h3>Modelo de IA para el agente</h3>
-            <p class="misite-hint">El modelo seleccionado se usará para generar artículos y textos. El modelo gratuito está preseleccionado y es suficiente para la mayoría de usos.</p>
-
-            <div class="model-featured">
-              <label class="model-option selected" id="model-free-label">
-                <input type="radio" name="ai-model" value="meta-llama/llama-3.1-8b-instruct:free" id="model-free" checked>
-                <div class="model-info">
-                  <span class="model-name">Llama 3.1 8B</span>
-                  <span class="model-badge free">Gratis</span>
+              <div class="chat-suggestions">
+                <p class="suggestions-label">Sugerencias rápidas:</p>
+                <div class="suggestion-chips">
+                  <button
+                    class="suggestion-chip"
+                    data-prompt="Quiero crear un nuevo artículo para el blog"
+                  >
+                    Crear un artículo
+                  </button>
+                  <button
+                    class="suggestion-chip"
+                    data-prompt="Mejora el texto principal de mi página de inicio"
+                  >
+                    Mejorar textos web
+                  </button>
+                  <button
+                    class="suggestion-chip"
+                    data-prompt="¿Qué temas debería cubrir en mi blog?"
+                  >
+                    Ideas de contenido
+                  </button>
                 </div>
-                <span class="model-desc">meta-llama/llama-3.1-8b-instruct:free · Recomendado para la mayoría de tareas.</span>
-              </label>
-            </div>
-
-            <div class="model-custom-section">
-              <p class="model-custom-title">Usar otro modelo</p>
-              <p class="model-custom-hint">Puedes usar cualquier modelo disponible en OpenRouter. Los modelos de pago tienen mayor calidad pero generan costes en tu cuenta OpenRouter.</p>
-              <div class="model-search-wrap">
-                <input type="text" id="model-search" placeholder="Buscar modelo, ej: gpt-4o, claude, mistral…" autocomplete="off">
-                <div id="model-search-results" class="model-search-results" style="display:none"></div>
               </div>
-              <label class="model-option" id="model-custom-label" style="display:none">
-                <input type="radio" name="ai-model" value="" id="model-custom">
-                <div class="model-info">
-                  <span class="model-name" id="model-custom-name">—</span>
-                  <span class="model-badge paid" id="model-custom-badge">De pago</span>
+              <div class="chat-input-area">
+                <textarea
+                  id="chat-input"
+                  placeholder="Escribe tu mensaje..."
+                  rows="3"
+                ></textarea>
+                <button id="chat-send" class="btn-primary-sm chat-send-btn">
+                  Enviar
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- BLOG -->
+          <section data-panel="blog" class="panel-section" hidden>
+            <div class="section-header">
+              <div class="section-title">
+                <h2>Blog</h2>
+                <button class="btn-primary-sm" id="new-article-btn">
+                  + Nuevo artículo
+                </button>
+              </div>
+              <p>Gestiona tus artículos publicados y borradores.</p>
+            </div>
+            <div id="article-form-wrap" class="article-form-wrap" hidden>
+              <div class="article-form-card">
+                <div class="article-form-header">
+                  <h3 id="article-form-title">Nuevo artículo</h3>
+                  <button
+                    id="article-form-close"
+                    class="btn-icon article-form-close"
+                    aria-label="Cerrar formulario"
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
                 </div>
-                <span class="model-desc" id="model-custom-desc"></span>
-              </label>
+                <form id="article-form">
+                  <input type="hidden" id="article-edit-id" value="" />
+                  <div class="form-group">
+                    <label for="article-title-input">Título</label>
+                    <input
+                      type="text"
+                      id="article-title-input"
+                      placeholder="Título del artículo"
+                      required
+                    />
+                  </div>
+                  <div class="form-group" style="margin-top: 1rem">
+                    <label for="article-content-input">Contenido</label>
+                    <textarea
+                      id="article-content-input"
+                      rows="10"
+                      placeholder="Escribe el contenido del artículo aquí..."
+                    ></textarea>
+                  </div>
+                  <div class="form-group" style="margin-top: 1rem">
+                    <label for="article-status-select">Estado</label>
+                    <select
+                      id="article-status-select"
+                      style="
+                        width: auto;
+                        padding: 8px 14px;
+                        border: 1px solid var(--border);
+                        border-radius: var(--radius-sm);
+                        background: var(--bg-base);
+                        color: var(--text-primary);
+                        cursor: pointer;
+                      "
+                    >
+                      <option value="draft">Borrador</option>
+                      <option value="published">Publicado</option>
+                    </select>
+                  </div>
+                  <div
+                    style="
+                      margin-top: 1.5rem;
+                      display: flex;
+                      gap: 1rem;
+                      align-items: center;
+                    "
+                  >
+                    <button
+                      type="submit"
+                      class="btn-primary-sm"
+                      id="article-form-submit"
+                    >
+                      Guardar artículo
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-ghost-sm"
+                      id="article-form-cancel"
+                    >
+                      Cancelar
+                    </button>
+                    <span
+                      id="article-form-msg"
+                      style="
+                        font-size: 0.8125rem;
+                        color: var(--accent);
+                        margin-left: 0.5rem;
+                      "
+                      hidden
+                    ></span>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <div id="articles-list"></div>
+          </section>
+
+          <!-- MESSAGES -->
+          <section data-panel="messages" class="panel-section" hidden>
+            <div class="section-header">
+              <h2>Mensajes</h2>
+              <p>Mensajes recibidos desde el formulario de contacto.</p>
+            </div>
+            <div id="messages-list" class="messages-list"></div>
+          </section>
+
+          <!-- MI SITIO WEB -->
+          <section data-panel="misite" class="panel-section" hidden>
+            <div class="section-header">
+              <h2>Mi sitio web</h2>
+              <p>Configura el contenido y la apariencia de tu sitio web.</p>
             </div>
 
-            <div style="margin-top:1.5rem;display:flex;gap:1rem;align-items:center">
-              <button class="btn-primary-sm" id="save-model-btn">Guardar modelo</button>
-              <span id="save-model-msg" style="font-size:0.8125rem;display:none"></span>
+            <!-- TABS internos -->
+            <div class="misite-tabs">
+              <button class="misite-tab active" data-tab="logo">Logo</button>
+              <button class="misite-tab" data-tab="paginas">Páginas</button>
+              <button class="misite-tab" data-tab="agente">Modelo IA</button>
             </div>
-          </div>
-        </div>
-      </section>
 
-      <!-- MI SERVICIO -->
-      <section data-panel="servicio" class="panel-section" hidden>
-        <div class="section-header"><h2>Mi servicio</h2></div>
-        <div class="servicio-cards">
-          <div class="servicio-card featured">
-            <h3>Presencia Online</h3>
-            <div class="servicio-features">
-              <p class="feature">✓ Web profesional</p>
-              <p class="feature">✓ Agente de marketing IA</p>
-              <p class="feature">✓ Blog con artículos</p>
-              <p class="feature">✓ Soporte incluido</p>
+            <!-- TAB: LOGO -->
+            <div class="misite-panel active" id="misite-logo">
+              <div class="misite-block">
+                <h3>Logo de la empresa</h3>
+                <p class="misite-hint">
+                  Sube tu logo en PNG, JPG, SVG o WebP. Máximo 2 MB.
+                </p>
+                <div class="logo-upload-area" id="logo-drop-area">
+                  <div id="logo-preview-wrap">
+                    <div class="logo-placeholder" id="logo-placeholder">
+                      <svg
+                        width="32"
+                        height="32"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                      >
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <polyline points="21 15 16 10 5 21" />
+                      </svg>
+                      <span>Sin logo</span>
+                    </div>
+                    <img
+                      id="logo-preview"
+                      src=""
+                      alt="Logo"
+                      style="
+                        display: none;
+                        max-height: 80px;
+                        max-width: 240px;
+                        object-fit: contain;
+                      "
+                    />
+                  </div>
+                  <label class="site-upload-btn" for="logo-file-input">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="17 8 12 3 7 8" />
+                      <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                    Subir logo
+                  </label>
+                  <input
+                    type="file"
+                    id="logo-file-input"
+                    accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                    style="display: none"
+                  />
+                </div>
+                <p
+                  id="logo-upload-msg"
+                  style="
+                    font-size: 0.8125rem;
+                    margin-top: 0.5rem;
+                    display: none;
+                  "
+                ></p>
+              </div>
             </div>
-            <p class="servicio-period">Plan mensual</p>
-          </div>
-          <div class="servicio-card">
-            <h3>Estado del servicio</h3>
-            <div class="status-items">
-              <div class="status-item"><span class="status-dot active"></span><span>Web: Activa</span></div>
-              <div class="status-item"><span class="status-dot active"></span><span>Agente: Disponible</span></div>
-              <div class="status-item"><span class="status-dot active"></span><span>Blog: Funcionando</span></div>
+
+            <!-- TAB: PÁGINAS -->
+            <div class="misite-panel" id="misite-paginas" style="display: none">
+              <div class="misite-pages-tabs">
+                <button class="misite-page-tab active" data-page="index">
+                  Inicio
+                </button>
+                <button class="misite-page-tab" data-page="quienes">
+                  Quiénes somos
+                </button>
+                <button class="misite-page-tab" data-page="servicios">
+                  Servicios
+                </button>
+                <button class="misite-page-tab" data-page="contacto">
+                  Contacto
+                </button>
+                <button class="misite-page-tab" data-page="blog">Blog</button>
+              </div>
+              <div id="misite-page-form" class="misite-page-form">
+                <!-- rendered by JS -->
+              </div>
+              <div
+                style="
+                  margin-top: 1.5rem;
+                  display: flex;
+                  gap: 1rem;
+                  align-items: center;
+                "
+              >
+                <button class="btn-primary-sm" id="save-page-texts">
+                  Guardar cambios
+                </button>
+                <span
+                  id="save-page-msg"
+                  style="font-size: 0.8125rem; display: none"
+                ></span>
+              </div>
             </div>
-          </div>
-          <div class="servicio-card">
-            <h3>Contacto</h3>
-            <p>¿Necesitas ayuda técnica o tienes dudas sobre tu plan?</p>
-            <p class="contact-email"><strong>Email:</strong><br><a href="mailto:hola@biglobster.top">hola@biglobster.top</a></p>
-            <p class="contact-note">Te responderemos en menos de 24 horas.</p>
-          </div>
-        </div>
-      </section>
 
-    </main>
-  </div>
-</div>
+            <!-- TAB: MODELO IA -->
+            <div class="misite-panel" id="misite-agente" style="display: none">
+              <div class="misite-block">
+                <h3>Modelo de IA para el agente</h3>
+                <p class="misite-hint">
+                  El modelo seleccionado se usará para generar artículos y
+                  textos. El modelo gratuito está preseleccionado y es
+                  suficiente para la mayoría de usos.
+                </p>
 
-<style>
-/* MI SITIO WEB styles */
-.misite-tabs { display:flex; gap:0.25rem; margin-bottom:1.5rem; border-bottom:1px solid var(--border); padding-bottom:0; }
-.misite-tab {
-  padding:0.5rem 1rem; background:transparent; border:none; border-bottom:2px solid transparent;
-  font-size:0.875rem; font-weight:500; color:var(--text-muted); cursor:pointer;
-  margin-bottom:-1px; transition:color 150ms, border-color 150ms;
-}
-.misite-tab:hover { color:var(--text-primary); }
-.misite-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
-.misite-block { max-width:560px; }
-.misite-block h3 { font-size:1rem; font-weight:600; margin-bottom:0.375rem; color:var(--text-primary); }
-.misite-hint { font-size:0.8125rem; color:var(--text-muted); margin-bottom:1.25rem; }
-.logo-upload-area { display:flex; align-items:center; gap:1.25rem; padding:1.25rem; background:var(--bg-subtle); border:1px dashed var(--border); border-radius:var(--radius-sm); }
-.logo-placeholder { display:flex; flex-direction:column; align-items:center; gap:0.5rem; color:var(--text-muted); font-size:0.8125rem; }
-.site-upload-btn {
-  display:inline-flex; align-items:center; gap:0.375rem; padding:0.5rem 1rem;
-  background:var(--bg-base); border:1px solid var(--border); border-radius:var(--radius-sm);
-  font-size:0.875rem; font-weight:500; cursor:pointer; color:var(--text-primary);
-  transition:border-color 150ms;
-}
-.site-upload-btn:hover { border-color:var(--accent); color:var(--accent); }
-/* Pages tabs */
-.misite-pages-tabs { display:flex; gap:0.25rem; flex-wrap:wrap; margin-bottom:1.5rem; }
-.misite-page-tab {
-  padding:0.375rem 0.875rem; background:var(--bg-subtle); border:1px solid var(--border);
-  border-radius:20px; font-size:0.8125rem; font-weight:500; color:var(--text-muted);
-  cursor:pointer; transition:all 150ms;
-}
-.misite-page-tab:hover { border-color:var(--accent); color:var(--accent); }
-.misite-page-tab.active { background:var(--accent); border-color:var(--accent); color:#fff; }
-.misite-page-form { max-width:560px; display:flex; flex-direction:column; gap:1rem; }
-.misite-page-form label { display:block; font-size:0.8125rem; font-weight:500; color:var(--text-primary); margin-bottom:0.375rem; }
-.misite-page-form input, .misite-page-form textarea {
-  width:100%; padding:0.5rem 0.75rem;
-  border:1px solid var(--border); border-radius:var(--radius-sm);
-  font-size:0.9375rem; color:var(--text-primary); background:var(--bg-base);
-  font-family:inherit; outline:none; transition:border-color 150ms;
-}
-.misite-page-form input:focus, .misite-page-form textarea:focus { border-color:var(--accent); }
-/* Model selector */
-.model-featured { margin-bottom:1.5rem; }
-.model-option {
-  display:flex; flex-direction:column; gap:0.375rem;
-  padding:1rem; border:1px solid var(--border); border-radius:var(--radius-sm);
-  cursor:pointer; transition:border-color 150ms; margin-bottom:0.5rem;
-}
-.model-option input[type=radio] { display:none; }
-.model-option.selected { border-color:var(--accent); background:color-mix(in srgb, var(--accent) 5%, transparent); }
-.model-info { display:flex; align-items:center; gap:0.5rem; }
-.model-name { font-weight:600; font-size:0.9375rem; color:var(--text-primary); }
-.model-badge { padding:0.125rem 0.5rem; border-radius:20px; font-size:0.75rem; font-weight:600; }
-.model-badge.free { background:#dcfce7; color:#166534; }
-.model-badge.paid { background:#fef9c3; color:#854d0e; }
-.model-badge.paid-high { background:#fee2e2; color:#991b1b; }
-.model-desc { font-size:0.8125rem; color:var(--text-muted); }
-.model-custom-section { border-top:1px solid var(--border); padding-top:1.25rem; }
-.model-custom-title { font-size:0.9375rem; font-weight:600; color:var(--text-primary); margin-bottom:0.25rem; }
-.model-custom-hint { font-size:0.8125rem; color:var(--text-muted); margin-bottom:1rem; max-width:55ch; }
-.model-search-wrap { position:relative; margin-bottom:1rem; }
-.model-search-wrap input {
-  width:100%; padding:0.5rem 0.75rem; border:1px solid var(--border);
-  border-radius:var(--radius-sm); font-size:0.875rem; color:var(--text-primary);
-  background:var(--bg-base); outline:none; transition:border-color 150ms;
-}
-.model-search-wrap input:focus { border-color:var(--accent); }
-.model-search-results {
-  position:absolute; top:100%; left:0; right:0; z-index:50;
-  background:var(--bg-surface); border:1px solid var(--border);
-  border-radius:var(--radius-sm); box-shadow:0 4px 16px rgba(0,0,0,.1);
-  max-height:240px; overflow-y:auto;
-}
-.model-result-item {
-  padding:0.625rem 0.875rem; cursor:pointer; display:flex; align-items:center;
-  justify-content:space-between; gap:0.5rem; font-size:0.875rem;
-  transition:background 100ms;
-}
-.model-result-item:hover { background:var(--bg-subtle); }
-.model-result-item .mri-id { color:var(--text-muted); font-size:0.75rem; font-family:monospace; }
-/* article form */
-.article-form-wrap { margin-bottom:2rem; animation:fadeIn .25s ease; }
-.article-form-card { background:var(--bg-surface); border:1px solid var(--accent); border-radius:var(--radius-md); padding:2rem; box-shadow:var(--shadow-md); }
-.article-form-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
-.article-form-header h3 { font-size:1.1rem; font-weight:600; color:var(--text-primary); margin:0; }
-.article-form-close { width:2rem; height:2rem; display:flex; align-items:center; justify-content:center; border-radius:var(--radius-sm); color:var(--text-muted); background:transparent; border:none; cursor:pointer; transition:background .2s,color .2s; }
-.article-form-close:hover { background:var(--bg-subtle); color:var(--text-primary); }
-#article-title-input, #article-content-input {
-  width:100%; padding:0.5rem 0.75rem; border:1px solid var(--border);
-  border-radius:var(--radius-sm); font-size:0.9375rem; color:var(--text-primary);
-  background:var(--bg-base); font-family:inherit; outline:none; transition:border-color .2s;
-}
-#article-title-input:focus, #article-content-input:focus { border-color:var(--accent); }
-#article-content-input { resize:vertical; }
-</style>
+                <div class="model-featured">
+                  <label class="model-option selected" id="model-free-label">
+                    <input
+                      type="radio"
+                      name="ai-model"
+                      value="meta-llama/llama-3.1-8b-instruct:free"
+                      id="model-free"
+                      checked
+                    />
+                    <div class="model-info">
+                      <span class="model-name">Llama 3.1 8B</span>
+                      <span class="model-badge free">Gratis</span>
+                    </div>
+                    <span class="model-desc"
+                      >meta-llama/llama-3.1-8b-instruct:free · Recomendado para
+                      la mayoría de tareas.</span
+                    >
+                  </label>
+                </div>
 
-<script src="/panel.js"></script>
-</body>
+                <div class="model-custom-section">
+                  <p class="model-custom-title">Usar otro modelo</p>
+                  <p class="model-custom-hint">
+                    Puedes usar cualquier modelo disponible en OpenRouter. Los
+                    modelos de pago tienen mayor calidad pero generan costes en
+                    tu cuenta OpenRouter.
+                  </p>
+                  <div class="model-search-wrap">
+                    <input
+                      type="text"
+                      id="model-search"
+                      placeholder="Buscar modelo, ej: gpt-4o, claude, mistral…"
+                      autocomplete="off"
+                    />
+                    <div
+                      id="model-search-results"
+                      class="model-search-results"
+                      style="display: none"
+                    ></div>
+                  </div>
+                  <label
+                    class="model-option"
+                    id="model-custom-label"
+                    style="display: none"
+                  >
+                    <input
+                      type="radio"
+                      name="ai-model"
+                      value=""
+                      id="model-custom"
+                    />
+                    <div class="model-info">
+                      <span class="model-name" id="model-custom-name">—</span>
+                      <span class="model-badge paid" id="model-custom-badge"
+                        >De pago</span
+                      >
+                    </div>
+                    <span class="model-desc" id="model-custom-desc"></span>
+                  </label>
+                </div>
+
+                <div
+                  style="
+                    margin-top: 1.5rem;
+                    display: flex;
+                    gap: 1rem;
+                    align-items: center;
+                  "
+                >
+                  <button class="btn-primary-sm" id="save-model-btn">
+                    Guardar modelo
+                  </button>
+                  <span
+                    id="save-model-msg"
+                    style="font-size: 0.8125rem; display: none"
+                  ></span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- MI SERVICIO -->
+          <section data-panel="servicio" class="panel-section" hidden>
+            <div class="section-header"><h2>Mi servicio</h2></div>
+            <div class="servicio-cards">
+              <div class="servicio-card featured">
+                <h3>Presencia Online</h3>
+                <div class="servicio-features">
+                  <p class="feature">✓ Web profesional</p>
+                  <p class="feature">✓ Agente de marketing IA</p>
+                  <p class="feature">✓ Blog con artículos</p>
+                  <p class="feature">✓ Soporte incluido</p>
+                </div>
+                <p class="servicio-period">Plan mensual</p>
+              </div>
+              <div class="servicio-card">
+                <h3>Estado del servicio</h3>
+                <div class="status-items">
+                  <div class="status-item">
+                    <span class="status-dot active"></span
+                    ><span>Web: Activa</span>
+                  </div>
+                  <div class="status-item">
+                    <span class="status-dot active"></span
+                    ><span>Agente: Disponible</span>
+                  </div>
+                  <div class="status-item">
+                    <span class="status-dot active"></span
+                    ><span>Blog: Funcionando</span>
+                  </div>
+                </div>
+              </div>
+              <div class="servicio-card">
+                <h3>Contacto</h3>
+                <p>¿Necesitas ayuda técnica o tienes dudas sobre tu plan?</p>
+                <p class="contact-email">
+                  <strong>Email:</strong><br /><a
+                    href="mailto:hola@biglobster.top"
+                    >hola@biglobster.top</a
+                  >
+                </p>
+                <p class="contact-note">
+                  Te responderemos en menos de 24 horas.
+                </p>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <style>
+      /* MI SITIO WEB styles */
+      .misite-tabs {
+        display: flex;
+        gap: 0.25rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0;
+      }
+      .misite-tab {
+        padding: 0.5rem 1rem;
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        cursor: pointer;
+        margin-bottom: -1px;
+        transition:
+          color 150ms,
+          border-color 150ms;
+      }
+      .misite-tab:hover {
+        color: var(--text-primary);
+      }
+      .misite-tab.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+      }
+      .misite-block {
+        max-width: 560px;
+      }
+      .misite-block h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.375rem;
+        color: var(--text-primary);
+      }
+      .misite-hint {
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+        margin-bottom: 1.25rem;
+      }
+      .logo-upload-area {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        padding: 1.25rem;
+        background: var(--bg-subtle);
+        border: 1px dashed var(--border);
+        border-radius: var(--radius-sm);
+      }
+      .logo-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-muted);
+        font-size: 0.8125rem;
+      }
+      .site-upload-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.5rem 1rem;
+        background: var(--bg-base);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        color: var(--text-primary);
+        transition: border-color 150ms;
+      }
+      .site-upload-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .panel-site-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.45rem 0.75rem;
+        border-radius: 999px;
+        text-decoration: none;
+        color: var(--text-secondary);
+        font-size: 0.8125rem;
+        font-weight: 500;
+        border: 1px solid transparent;
+        transition:
+          background 150ms,
+          color 150ms,
+          border-color 150ms;
+      }
+      .panel-site-link:hover {
+        background: var(--bg-subtle);
+        color: var(--text-primary);
+        border-color: var(--border);
+      }
+      /* Pages tabs */
+      .misite-pages-tabs {
+        display: flex;
+        gap: 0.25rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+      }
+      .misite-page-tab {
+        padding: 0.375rem 0.875rem;
+        background: var(--bg-subtle);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all 150ms;
+      }
+      .misite-page-tab:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .misite-page-tab.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+      .misite-page-form {
+        max-width: 560px;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .misite-page-form label {
+        display: block;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        margin-bottom: 0.375rem;
+      }
+      .misite-page-form input,
+      .misite-page-form textarea {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 0.9375rem;
+        color: var(--text-primary);
+        background: var(--bg-base);
+        font-family: inherit;
+        outline: none;
+        transition: border-color 150ms;
+      }
+      .misite-page-form input:focus,
+      .misite-page-form textarea:focus {
+        border-color: var(--accent);
+      }
+      /* Model selector */
+      .model-featured {
+        margin-bottom: 1.5rem;
+      }
+      .model-option {
+        display: flex;
+        flex-direction: column;
+        gap: 0.375rem;
+        padding: 1rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: border-color 150ms;
+        margin-bottom: 0.5rem;
+      }
+      .model-option input[type="radio"] {
+        display: none;
+      }
+      .model-option.selected {
+        border-color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 5%, transparent);
+      }
+      .model-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .model-name {
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: var(--text-primary);
+      }
+      .model-badge {
+        padding: 0.125rem 0.5rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+      .model-badge.free {
+        background: #dcfce7;
+        color: #166534;
+      }
+      .model-badge.paid {
+        background: #fef9c3;
+        color: #854d0e;
+      }
+      .model-badge.paid-high {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .model-desc {
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+      }
+      .model-custom-section {
+        border-top: 1px solid var(--border);
+        padding-top: 1.25rem;
+      }
+      .model-custom-title {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+      }
+      .model-custom-hint {
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+        max-width: 55ch;
+      }
+      .model-search-wrap {
+        position: relative;
+        margin-bottom: 1rem;
+      }
+      .model-search-wrap input {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 0.875rem;
+        color: var(--text-primary);
+        background: var(--bg-base);
+        outline: none;
+        transition: border-color 150ms;
+      }
+      .model-search-wrap input:focus {
+        border-color: var(--accent);
+      }
+      .model-search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 50;
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        max-height: 240px;
+        overflow-y: auto;
+      }
+      .model-result-item {
+        padding: 0.625rem 0.875rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        transition: background 100ms;
+      }
+      .model-result-item:hover {
+        background: var(--bg-subtle);
+      }
+      .model-result-item .mri-id {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        font-family: monospace;
+      }
+      /* article form */
+      .article-form-wrap {
+        margin-bottom: 2rem;
+        animation: fadeIn 0.25s ease;
+      }
+      .article-form-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--accent);
+        border-radius: var(--radius-md);
+        padding: 2rem;
+        box-shadow: var(--shadow-md);
+      }
+      .article-form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+      .article-form-header h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+      }
+      .article-form-close {
+        width: 2rem;
+        height: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-sm);
+        color: var(--text-muted);
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          color 0.2s;
+      }
+      .article-form-close:hover {
+        background: var(--bg-subtle);
+        color: var(--text-primary);
+      }
+      #article-title-input,
+      #article-content-input {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 0.9375rem;
+        color: var(--text-primary);
+        background: var(--bg-base);
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      #article-title-input:focus,
+      #article-content-input:focus {
+        border-color: var(--accent);
+      }
+      #article-content-input {
+        resize: vertical;
+      }
+
+      /* contact messages */
+      .messages-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .message-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 1.25rem;
+        box-shadow: var(--shadow-sm);
+      }
+      .message-card-header {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem 1rem;
+        align-items: baseline;
+        margin-bottom: 0.75rem;
+      }
+      .message-card-name {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+      .message-card-email,
+      .message-card-date {
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+      }
+      .message-card-body {
+        font-size: 0.9375rem;
+        color: var(--text-secondary);
+        white-space: pre-line;
+      }
+    </style>
+
+    <script src="/panel.js"></script>
+  </body>
 </html>
