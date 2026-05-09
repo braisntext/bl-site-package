@@ -6,7 +6,7 @@ const router = Router();
 
 router.post('/login', (req, res) => {
   const { password } = req.body;
-  if (!password) return res.status(400).json({ error: 'Contraseña requerida' });
+  if (!password) return res.status(400).json({ error: 'Contrase\u00f1a requerida' });
 
   const panelPassword = process.env.PANEL_PASSWORD || getConfig('panel_password');
   if (!panelPassword) {
@@ -14,12 +14,15 @@ router.post('/login', (req, res) => {
   }
 
   if (password !== panelPassword) {
-    return res.status(401).json({ error: 'Contraseña incorrecta' });
+    return res.status(401).json({ error: 'Contrase\u00f1a incorrecta' });
   }
 
   const secret = process.env.JWT_SECRET || getConfig('jwt_secret');
   const token = jwt.sign({ role: 'admin' }, secret, { expiresIn: '24h' });
-  res.json({ token });
+
+  const companyName = process.env.CLIENT_COMPANY_NAME || getConfig('company_name') || '';
+
+  res.json({ token, companyName });
 });
 
 export default router;
