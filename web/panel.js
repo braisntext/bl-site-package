@@ -1,409 +1,437 @@
-// ============================================================
-// PANEL CLIENT LOGIC — conectado a API real
-// ============================================================
+document.addEventListener('DOMContentLoaded', function () {
 
-const state = {
-  authenticated: false,
-  currentSection: 'overview',
-  messages: [],
-  authToken: null,
-  companyName: ''
-};
+  // ── AUTH ──────────────────────────────────────────────────────────
+  var token = null;
 
-// ── Auth ──────────────────────────────────────────────────────
-async function authenticatePanel(password) {
-  try {
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password })
-    });
-    const data = await res.json();
+  var loginScreen = document.getElementById('login-screen');
+  var panelApp = document.getElementById('panel-app');
+  var loginForm = document.getElementById('login-form');
+  var loginError = document.getElementById('login-error');
 
-    if (res.status === 503) {
-      window.location.href = '/setup';
-      return false;
-    }
-    if (!res.ok) {
-      showLoginError(data.error || 'Contraseña incorrecta.');
-      return false;
-    }
-
-    state.authToken = data.token;
-    state.authenticated = true;
-    state.companyName = data.companyName || '';
-
-    document.getElementById('login-screen').hidden = true;
-    document.getElementById('panel-app').hidden = false;
-
-    if (state.companyName) {
-      document.getElementById('company-name').textContent = state.companyName;
-      const sc = document.getElementById('sidebar-company');
-      if (sc) sc.textContent = state.companyName;
-    }
-
-    updateGreeting();
-    loadBlogArticles();
-    loadBlogStats();
-    return true;
-  } catch {
-    showLoginError('Error de conexión. Intenta de nuevo.');
-    return false;
-  }
-}
-
-function showLoginError(msg) {
-  const errorEl = document.getElementById('login-error');
-  errorEl.textContent = msg;
-  errorEl.hidden = false;
-  setTimeout(() => { errorEl.hidden = true; }, 4000);
-}
-
-function logout() {
-  state.authenticated = false;
-  state.authToken = null;
-  state.messages = [];
-  document.getElementById('login-screen').hidden = false;
-  document.getElementById('panel-app').hidden = true;
-  document.getElementById('panel-password').value = '';
-  setTimeout(() => document.getElementById('panel-password').focus(), 50);
-}
-
-// ── Navigation ────────────────────────────────────────────────
-function navigateToSection(sectionName) {
-  document.querySelectorAll('[data-panel]').forEach(s => {
-    s.hidden = true;
-    s.classList.remove('active');
-  });
-  const section = document.querySelector(`[data-panel="${sectionName}"]`);
-  if (section) {
-    section.hidden = false;
-    section.classList.add('active');
-    state.currentSection = sectionName;
-  }
-  document.querySelectorAll('.sidebar-nav-item').forEach(btn => btn.classList.remove('active'));
-  const activeBtn = document.querySelector(`[data-section="${sectionName}"]`);
-  if (activeBtn) activeBtn.classList.add('active');
-
-  if (sectionName === 'blog') loadBlogArticles();
-}
-
-// ── Chat ──────────────────────────────────────────────────────
-function addChatMessage(text, isUser = false) {
-  const msgDiv = document.createElement('div');
-  msgDiv.className = isUser ? 'chat-message user-message' : 'chat-message agent-message';
-  msgDiv.innerHTML = `<p>${escapeHtml(text)}</p>`;
-  const container = document.getElementById('chat-messages');
-  container.appendChild(msgDiv);
-  container.scrollTop = container.scrollHeight;
-  state.messages.push({ text, isUser, timestamp: new Date() });
-}
-
-async function sendChatMessage() {
-  const input = document.getElementById('chat-input');
-  const text = input.value.trim();
-  if (!text) return;
-
-  addChatMessage(text, true);
-  input.value = '';
-
-  const typingDiv = document.createElement('div');
-  typingDiv.className = 'chat-message agent-message';
-  typingDiv.innerHTML = '<p style="color:var(--text-muted)">Escribiendo…</p>';
-  document.getElementById('chat-messages').appendChild(typingDiv);
-
-  try {
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${state.authToken}`
-      },
-      body: JSON.stringify({ message: text })
-    });
-    const data = await res.json();
-    typingDiv.remove();
-    addChatMessage(data.reply || 'Sin respuesta.', false);
-  } catch {
-    typingDiv.remove();
-    addChatMessage('Error al contactar el agente. Intenta de nuevo.', false);
-  }
-}
-
-function preFillChat(prompt) {
-  navigateToSection('chat');
-  setTimeout(() => {
-    const input = document.getElementById('chat-input');
-    input.value = prompt;
-    input.focus();
-    input.setSelectionRange(prompt.length, prompt.length);
-  }, 100);
-}
-
-// ── Blog ──────────────────────────────────────────────────────
-async function loadBlogArticles() {
-  const container = document.getElementById('articles-list');
-  if (!container) return;
-
-  container.innerHTML = '<p style="color:var(--text-muted);font-size:1.4rem;padding:1rem 0">Cargando artículos…</p>';
-
-  try {
-    const res = await fetch('/api/blog', {
-      headers: { 'Authorization': `Bearer ${state.authToken}` }
-    });
-    const articles = await res.json();
-
-    if (!articles.length) {
-      container.innerHTML = `
-        <div class="empty-state">
-          <p>Todavía no tienes artículos.<br>¡Crea el primero con el botón de arriba!</p>
-        </div>`;
-      return;
-    }
-
-    container.innerHTML = articles.map(a => `
-      <div class="blog-card">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap">
-          <div style="flex:1">
-            <h3 style="margin-bottom:.4rem">${escapeHtml(a.title)}</h3>
-            <div class="blog-meta">
-              <span class="blog-date">${new Date(a.created_at).toLocaleDateString('es-ES', {day:'numeric',month:'short',year:'numeric'})}</span>
-              <span class="blog-status" style="background:${a.status === 'published' ? '#E8F5E9' : 'var(--bg-subtle)'};color:${a.status === 'published' ? '#2E7D32' : 'var(--text-muted)'}">
-                ${a.status === 'published' ? 'Publicado' : 'Borrador'}
-              </span>
-            </div>
-            ${a.content ? `<p class="blog-excerpt">${escapeHtml(a.content.slice(0, 140))}${a.content.length > 140 ? '…' : ''}</p>` : ''}
-          </div>
-          <div class="blog-actions" style="flex-shrink:0">
-            <button class="link-btn" onclick="openEditArticle(${a.id}, ${JSON.stringify(escapeHtml(a.title))}, ${JSON.stringify(escapeHtml(a.content || ''))}, '${a.status}')">Editar</button>
-            <button class="link-btn" onclick="toggleArticleStatus(${a.id}, '${a.status}')">${a.status === 'published' ? 'Despublicar' : 'Publicar'}</button>
-            <button class="link-btn" style="color:#c0392b" onclick="deleteArticle(${a.id})">Eliminar</button>
-          </div>
-        </div>
-      </div>
-    `).join('');
-  } catch {
-    container.innerHTML = '<p style="color:#c0392b;font-size:1.4rem">Error al cargar los artículos. Recarga la página.</p>';
-  }
-}
-
-async function loadBlogStats() {
-  const statEl = document.getElementById('stat-posts');
-  if (!statEl) return;
-  try {
-    const res = await fetch('/api/blog', {
-      headers: { 'Authorization': `Bearer ${state.authToken}` }
-    });
-    const articles = await res.json();
-    const published = articles.filter(a => a.status === 'published').length;
-    statEl.textContent = published;
-  } catch { /* silencioso */ }
-}
-
-// ── Article Form ──────────────────────────────────────────────
-function openNewArticle() {
-  const wrap = document.getElementById('article-form-wrap');
-  document.getElementById('article-form-title').textContent = 'Nuevo artículo';
-  document.getElementById('article-edit-id').value = '';
-  document.getElementById('article-title-input').value = '';
-  document.getElementById('article-content-input').value = '';
-  document.getElementById('article-status-select').value = 'draft';
-  document.getElementById('article-form-submit').textContent = 'Guardar artículo';
-  hideFormMsg();
-  wrap.hidden = false;
-  document.getElementById('article-title-input').focus();
-  wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function openEditArticle(id, title, content, status) {
-  const wrap = document.getElementById('article-form-wrap');
-  document.getElementById('article-form-title').textContent = 'Editar artículo';
-  document.getElementById('article-edit-id').value = id;
-  document.getElementById('article-title-input').value = title;
-  document.getElementById('article-content-input').value = content;
-  document.getElementById('article-status-select').value = status;
-  document.getElementById('article-form-submit').textContent = 'Actualizar artículo';
-  hideFormMsg();
-  wrap.hidden = false;
-  wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function closeArticleForm() {
-  document.getElementById('article-form-wrap').hidden = true;
-  document.getElementById('article-form').reset();
-  document.getElementById('article-edit-id').value = '';
-}
-
-function showFormMsg(msg, isError = false) {
-  const el = document.getElementById('article-form-msg');
-  el.textContent = msg;
-  el.style.color = isError ? '#c0392b' : '#2E7D32';
-  el.hidden = false;
-}
-
-function hideFormMsg() {
-  document.getElementById('article-form-msg').hidden = true;
-}
-
-async function submitArticleForm(e) {
-  e.preventDefault();
-  const id = document.getElementById('article-edit-id').value;
-  const title = document.getElementById('article-title-input').value.trim();
-  const content = document.getElementById('article-content-input').value.trim();
-  const status = document.getElementById('article-status-select').value;
-
-  if (!title) { showFormMsg('El título es obligatorio.', true); return; }
-
-  const submitBtn = document.getElementById('article-form-submit');
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Guardando…';
-  hideFormMsg();
-
-  try {
-    const url = id ? `/api/blog/${id}` : '/api/blog';
-    const method = id ? 'PUT' : 'POST';
-    const res = await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${state.authToken}`
-      },
-      body: JSON.stringify({ title, content, status })
-    });
-
-    if (!res.ok) {
-      const data = await res.json();
-      showFormMsg(data.error || 'Error al guardar.', true);
-      return;
-    }
-
-    showFormMsg(id ? '¡Artículo actualizado!' : '¡Artículo creado!');
-    setTimeout(() => {
-      closeArticleForm();
-      loadBlogArticles();
-      loadBlogStats();
-    }, 900);
-  } catch {
-    showFormMsg('Error de conexión.', true);
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = id ? 'Actualizar artículo' : 'Guardar artículo';
-  }
-}
-
-async function toggleArticleStatus(id, currentStatus) {
-  const newStatus = currentStatus === 'published' ? 'draft' : 'published';
-  try {
-    await fetch(`/api/blog/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.authToken}` },
-      body: JSON.stringify({ status: newStatus })
-    });
-    loadBlogArticles();
-    loadBlogStats();
-  } catch { /* silencioso */ }
-}
-
-async function deleteArticle(id) {
-  if (!confirm('¿Eliminar este artículo? Esta acción no se puede deshacer.')) return;
-  try {
-    await fetch(`/api/blog/${id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${state.authToken}` }
-    });
-    loadBlogArticles();
-    loadBlogStats();
-  } catch { /* silencioso */ }
-}
-
-// ── UI Helpers ────────────────────────────────────────────────
-function updateGreeting() {
-  const hour = new Date().getHours();
-  let greeting = 'Buenos días';
-  if (hour >= 12 && hour < 20) greeting = 'Buenas tardes';
-  if (hour >= 20) greeting = 'Buenas noches';
-  const el = document.getElementById('greeting');
-  if (el) el.textContent = greeting;
-}
-
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-// ── Initialize ────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-
-  // Redirigir a setup si no está configurado
-  fetch('/api/setup/status')
-    .then(r => r.json())
-    .then(data => { if (!data.configured) window.location.href = '/setup'; })
-    .catch(() => {});
-
-  // Login
-  document.getElementById('login-form').addEventListener('submit', (e) => {
+  loginForm.addEventListener('submit', async function (e) {
     e.preventDefault();
-    const password = document.getElementById('panel-password').value;
-    if (!password) return;
-    authenticatePanel(password);
+    var pwd = document.getElementById('panel-password').value;
+    try {
+      var res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pwd })
+      });
+      var data = await res.json();
+      if (data.token) {
+        token = data.token;
+        loginScreen.hidden = true;
+        panelApp.hidden = false;
+        initPanel();
+      } else {
+        loginError.textContent = data.error || 'Contraseña incorrecta';
+        loginError.hidden = false;
+      }
+    } catch {
+      loginError.textContent = 'Error de conexión';
+      loginError.hidden = false;
+    }
   });
 
-  // Logout
-  document.getElementById('panel-logout')?.addEventListener('click', logout);
-  document.getElementById('sidebar-logout')?.addEventListener('click', logout);
+  function authHeaders() {
+    return { 'Content-Type': 'application/json', 'x-panel-token': token };
+  }
 
-  // Sidebar navigation
-  document.querySelectorAll('.sidebar-nav-item').forEach(btn => {
-    btn.addEventListener('click', () => navigateToSection(btn.dataset.section));
+  // ── LOGOUT ───────────────────────────────────────────────────────
+  function doLogout() {
+    token = null;
+    panelApp.hidden = true;
+    loginScreen.hidden = false;
+    document.getElementById('panel-password').value = '';
+    loginError.hidden = true;
+  }
+  document.getElementById('panel-logout').addEventListener('click', doLogout);
+  document.getElementById('sidebar-logout').addEventListener('click', doLogout);
+
+  // ── NAVIGATION ───────────────────────────────────────────────────
+  var navItems = document.querySelectorAll('.sidebar-nav-item');
+  var sections = document.querySelectorAll('.panel-section');
+
+  function showSection(name) {
+    navItems.forEach(function(b){ b.classList.toggle('active', b.dataset.section === name); });
+    sections.forEach(function(s){
+      var active = s.dataset.panel === name;
+      s.classList.toggle('active', active);
+      s.hidden = !active;
+    });
+    if (name === 'blog') loadArticles();
+    if (name === 'misite') initMiSite();
+  }
+
+  navItems.forEach(function(btn){
+    btn.addEventListener('click', function(){ showSection(btn.dataset.section); });
   });
 
-  // Chat
-  document.getElementById('chat-send')?.addEventListener('click', sendChatMessage);
-  document.getElementById('chat-input')?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); }
+  // Quick action buttons
+  document.querySelectorAll('.action-button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var action = btn.dataset.action;
+      if (action === 'create-article') { showSection('blog'); setTimeout(function(){ document.getElementById('new-article-btn').click(); }, 100); }
+      else if (action === 'edit-texts') showSection('chat');
+      else if (action === 'view-blog') showSection('blog');
+    });
   });
 
-  // Quick actions (overview)
-  document.querySelectorAll('.action-button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const action = btn.dataset.action;
-      if (action === 'create-article') {
-        navigateToSection('blog');
-        setTimeout(openNewArticle, 150);
-      } else if (action === 'edit-texts') {
-        navigateToSection('chat');
-      } else if (action === 'view-blog') {
-        navigateToSection('blog');
+  // ── INIT PANEL ───────────────────────────────────────────────────
+  function initPanel() {
+    // Greeting
+    var h = new Date().getHours();
+    var greet = h < 12 ? 'Buenos días' : h < 20 ? 'Buenas tardes' : 'Buenas noches';
+    document.getElementById('greeting').textContent = greet;
+
+    // Company name from setup config
+    fetch('/api/setup/status').then(function(r){ return r.json(); }).then(function(d){
+      var name = d.company_name || '';
+      if (name) {
+        document.getElementById('company-name').textContent = name;
+        document.getElementById('sidebar-company').textContent = name;
+      }
+    }).catch(function(){});
+
+    // Stats
+    fetch('/api/blog/posts').then(function(r){ return r.json(); }).then(function(d){
+      var published = (d.posts||[]).filter(function(p){ return p.status==='published'; }).length;
+      document.getElementById('stat-posts').textContent = published;
+    }).catch(function(){});
+  }
+
+  // ── CHAT ─────────────────────────────────────────────────────────
+  var chatMessages = document.getElementById('chat-messages');
+  var chatInput = document.getElementById('chat-input');
+  var chatSend = document.getElementById('chat-send');
+
+  function appendMessage(role, text) {
+    var div = document.createElement('div');
+    div.className = 'chat-message ' + (role === 'user' ? 'user-message' : 'agent-message');
+    var p = document.createElement('p');
+    p.textContent = text;
+    div.appendChild(p);
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  async function sendChat() {
+    var msg = chatInput.value.trim();
+    if (!msg) return;
+    chatInput.value = '';
+    chatSend.disabled = true;
+    appendMessage('user', msg);
+    try {
+      var res = await fetch('/api/chat/send', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ message: msg })
+      });
+      var data = await res.json();
+      appendMessage('agent', data.reply || 'Sin respuesta');
+    } catch {
+      appendMessage('agent', 'Error de conexión. Intenta de nuevo.');
+    }
+    chatSend.disabled = false;
+    chatInput.focus();
+  }
+
+  chatSend.addEventListener('click', sendChat);
+  chatInput.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+  });
+
+  document.querySelectorAll('.suggestion-chip').forEach(function(chip){
+    chip.addEventListener('click', function(){ chatInput.value = chip.dataset.prompt; chatInput.focus(); });
+  });
+
+  // ── BLOG ─────────────────────────────────────────────────────────
+  var articleFormWrap = document.getElementById('article-form-wrap');
+  var articleForm = document.getElementById('article-form');
+
+  document.getElementById('new-article-btn').addEventListener('click', function(){
+    document.getElementById('article-edit-id').value = '';
+    document.getElementById('article-title-input').value = '';
+    document.getElementById('article-content-input').value = '';
+    document.getElementById('article-status-select').value = 'draft';
+    document.getElementById('article-form-title').textContent = 'Nuevo artículo';
+    articleFormWrap.hidden = false;
+  });
+  document.getElementById('article-form-close').addEventListener('click', function(){ articleFormWrap.hidden = true; });
+  document.getElementById('article-form-cancel').addEventListener('click', function(){ articleFormWrap.hidden = true; });
+
+  articleForm.addEventListener('submit', async function(e){
+    e.preventDefault();
+    var id = document.getElementById('article-edit-id').value;
+    var body = {
+      title: document.getElementById('article-title-input').value.trim(),
+      content: document.getElementById('article-content-input').value.trim(),
+      status: document.getElementById('article-status-select').value
+    };
+    var url = id ? '/api/blog/posts/' + id : '/api/blog/posts';
+    var method = id ? 'PUT' : 'POST';
+    try {
+      var res = await fetch(url, { method: method, headers: authHeaders(), body: JSON.stringify(body) });
+      var data = await res.json();
+      if (data.success || data.id) {
+        articleFormWrap.hidden = true;
+        loadArticles();
+      }
+    } catch { /* silent */ }
+  });
+
+  function loadArticles() {
+    fetch('/api/blog/posts').then(function(r){ return r.json(); }).then(function(data){
+      var list = document.getElementById('articles-list');
+      var posts = data.posts || [];
+      if (!posts.length) { list.innerHTML = '<p style="color:var(--text-muted);padding:2rem 0">Aún no tienes artículos.</p>'; return; }
+      list.innerHTML = posts.map(function(p){
+        var badge = p.status === 'published'
+          ? '<span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:20px;font-size:0.75rem;font-weight:600">Publicado</span>'
+          : '<span style="background:#f3f4f6;color:#6b7280;padding:2px 8px;border-radius:20px;font-size:0.75rem;font-weight:600">Borrador</span>';
+        return '<div class="article-row"><div class="article-row-info"><span class="article-row-title">' + p.title + '</span>' + badge + '</div><div class="article-row-actions"><button class="btn-ghost-sm" data-edit="' + p.id + '">Editar</button><button class="btn-ghost-sm btn-danger" data-delete="' + p.id + '">Eliminar</button></div></div>';
+      }).join('');
+      list.querySelectorAll('[data-edit]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var post = posts.find(function(p){ return p.id == btn.dataset.edit; });
+          if (!post) return;
+          document.getElementById('article-edit-id').value = post.id;
+          document.getElementById('article-title-input').value = post.title;
+          document.getElementById('article-content-input').value = post.content;
+          document.getElementById('article-status-select').value = post.status;
+          document.getElementById('article-form-title').textContent = 'Editar artículo';
+          articleFormWrap.hidden = false;
+        });
+      });
+      list.querySelectorAll('[data-delete]').forEach(function(btn){
+        btn.addEventListener('click', async function(){
+          if (!confirm('¿Eliminar este artículo?')) return;
+          await fetch('/api/blog/posts/' + btn.dataset.delete, { method: 'DELETE', headers: authHeaders() });
+          loadArticles();
+        });
+      });
+    }).catch(function(){});
+  }
+
+  // ── MI SITIO WEB ─────────────────────────────────────────────────
+  var siteConfig = {};
+  var activePage = 'index';
+
+  function initMiSite() {
+    // Load current config
+    fetch('/api/site/config').then(function(r){ return r.json(); }).then(function(cfg){
+      siteConfig = cfg;
+      renderPageForm(activePage);
+      // Logo preview
+      if (cfg.logo_ext) {
+        var img = document.getElementById('logo-preview');
+        img.src = '/uploads/logo.' + cfg.logo_ext + '?t=' + Date.now();
+        img.style.display = 'block';
+        document.getElementById('logo-placeholder').style.display = 'none';
+      }
+      // Model
+      if (cfg.ai_model && cfg.ai_model !== 'meta-llama/llama-3.1-8b-instruct:free') {
+        var customLabel = document.getElementById('model-custom-label');
+        var customInput = document.getElementById('model-custom');
+        customInput.value = cfg.ai_model;
+        document.getElementById('model-custom-name').textContent = cfg.ai_model.split('/').pop();
+        document.getElementById('model-custom-desc').textContent = cfg.ai_model;
+        customLabel.style.display = 'flex';
+        customInput.checked = true;
+        document.getElementById('model-free-label').classList.remove('selected');
+        customLabel.classList.add('selected');
+      }
+    }).catch(function(){});
+
+    // Internal tabs
+    document.querySelectorAll('.misite-tab').forEach(function(tab){
+      tab.addEventListener('click', function(){
+        document.querySelectorAll('.misite-tab').forEach(function(t){ t.classList.remove('active'); });
+        tab.classList.add('active');
+        document.querySelectorAll('.misite-panel').forEach(function(p){ p.style.display = 'none'; });
+        document.getElementById('misite-' + tab.dataset.tab).style.display = 'block';
+      });
+    });
+
+    // Page tabs
+    document.querySelectorAll('.misite-page-tab').forEach(function(tab){
+      tab.addEventListener('click', function(){
+        document.querySelectorAll('.misite-page-tab').forEach(function(t){ t.classList.remove('active'); });
+        tab.classList.add('active');
+        activePage = tab.dataset.page;
+        renderPageForm(activePage);
+      });
+    });
+
+    // Save page texts
+    document.getElementById('save-page-texts').addEventListener('click', async function(){
+      var msg = document.getElementById('save-page-msg');
+      var payload = {};
+      document.querySelectorAll('.misite-page-form [data-key]').forEach(function(el){
+        payload[el.dataset.key] = el.value;
+      });
+      try {
+        var res = await fetch('/api/site/texts', { method:'POST', headers: authHeaders(), body: JSON.stringify(payload) });
+        var data = await res.json();
+        msg.textContent = data.success ? '✓ Guardado' : (data.error || 'Error');
+        msg.style.color = data.success ? 'var(--accent)' : 'var(--error)';
+        msg.style.display = 'inline';
+        setTimeout(function(){ msg.style.display = 'none'; }, 2500);
+      } catch {
+        msg.textContent = 'Error de conexión'; msg.style.display = 'inline';
       }
     });
-  });
 
-  // Botón nuevo artículo en blog
-  document.getElementById('new-article-btn')?.addEventListener('click', openNewArticle);
-
-  // Formulario de artículo
-  document.getElementById('article-form')?.addEventListener('submit', submitArticleForm);
-  document.getElementById('article-form-close')?.addEventListener('click', closeArticleForm);
-  document.getElementById('article-form-cancel')?.addEventListener('click', closeArticleForm);
-
-  // Suggestion chips
-  document.querySelectorAll('.suggestion-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      const input = document.getElementById('chat-input');
-      input.value = chip.dataset.prompt;
-      input.focus();
+    // Logo upload
+    document.getElementById('logo-file-input').addEventListener('change', async function(){
+      var file = this.files[0];
+      if (!file) return;
+      var msgEl = document.getElementById('logo-upload-msg');
+      var formData = new FormData();
+      formData.append('logo', file);
+      try {
+        var res = await fetch('/api/site/logo', { method:'POST', headers:{'x-panel-token': token}, body: formData });
+        var data = await res.json();
+        if (data.success) {
+          var img = document.getElementById('logo-preview');
+          img.src = data.path + '?t=' + Date.now();
+          img.style.display = 'block';
+          document.getElementById('logo-placeholder').style.display = 'none';
+          msgEl.textContent = '✓ Logo actualizado';
+          msgEl.style.color = 'var(--accent)';
+        } else {
+          msgEl.textContent = data.error || 'Error al subir';
+          msgEl.style.color = 'var(--error)';
+        }
+        msgEl.style.display = 'block';
+        setTimeout(function(){ msgEl.style.display = 'none'; }, 2500);
+      } catch {
+        msgEl.textContent = 'Error de conexión'; msgEl.style.display = 'block';
+      }
     });
-  });
 
-  // Textos web → abrir chat
-  document.querySelectorAll('.texto-action').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const section = btn.dataset.text || '';
-      preFillChat(`Quiero mejorar el texto de la sección "${section}" de mi web. `);
+    // Model save
+    document.getElementById('save-model-btn').addEventListener('click', async function(){
+      var selected = document.querySelector('input[name="ai-model"]:checked');
+      if (!selected) return;
+      var msg = document.getElementById('save-model-msg');
+      try {
+        var res = await fetch('/api/site/texts', { method:'POST', headers: authHeaders(), body: JSON.stringify({ ai_model: selected.value }) });
+        var data = await res.json();
+        msg.textContent = data.success ? '✓ Guardado' : (data.error || 'Error');
+        msg.style.color = data.success ? 'var(--accent)' : 'var(--error)';
+        msg.style.display = 'inline';
+        setTimeout(function(){ msg.style.display = 'none'; }, 2500);
+      } catch {
+        msg.textContent = 'Error'; msg.style.display = 'inline';
+      }
     });
-  });
 
-  // Focus en password al cargar
-  document.getElementById('panel-password')?.focus();
+    // Model radio toggle
+    document.getElementById('model-free').addEventListener('change', function(){
+      document.getElementById('model-free-label').classList.add('selected');
+      document.getElementById('model-custom-label').classList.remove('selected');
+    });
+
+    // Model search
+    var KNOWN_MODELS = [
+      { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', free: false, cost: 'bajo' },
+      { id: 'openai/gpt-4o', name: 'GPT-4o', free: false, cost: 'alto' },
+      { id: 'anthropic/claude-3.5-haiku', name: 'Claude 3.5 Haiku', free: false, cost: 'bajo' },
+      { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', free: false, cost: 'medio' },
+      { id: 'anthropic/claude-3-opus', name: 'Claude 3 Opus', free: false, cost: 'alto' },
+      { id: 'mistralai/mistral-7b-instruct:free', name: 'Mistral 7B', free: true, cost: null },
+      { id: 'mistralai/mixtral-8x7b-instruct', name: 'Mixtral 8x7B', free: false, cost: 'medio' },
+      { id: 'google/gemma-3-27b-it:free', name: 'Gemma 3 27B', free: true, cost: null },
+      { id: 'google/gemini-flash-1.5', name: 'Gemini Flash 1.5', free: false, cost: 'bajo' },
+      { id: 'deepseek/deepseek-r1:free', name: 'DeepSeek R1', free: true, cost: null },
+      { id: 'qwen/qwen-2.5-72b-instruct:free', name: 'Qwen 2.5 72B', free: true, cost: null }
+    ];
+
+    var searchInput = document.getElementById('model-search');
+    var searchResults = document.getElementById('model-search-results');
+
+    searchInput.addEventListener('input', function(){
+      var q = searchInput.value.trim().toLowerCase();
+      if (!q) { searchResults.style.display = 'none'; return; }
+      var matches = KNOWN_MODELS.filter(function(m){
+        return m.id.toLowerCase().includes(q) || m.name.toLowerCase().includes(q);
+      });
+      if (!matches.length) { searchResults.style.display = 'none'; return; }
+      searchResults.innerHTML = matches.map(function(m){
+        var badge = m.free
+          ? '<span class="model-badge free">Gratis</span>'
+          : (m.cost === 'alto' ? '<span class="model-badge paid-high">De pago</span>' : '<span class="model-badge paid">De pago</span>');
+        return '<div class="model-result-item" data-id="' + m.id + '" data-name="' + m.name + '" data-free="' + m.free + '">'
+          + '<span>' + m.name + ' ' + badge + '</span>'
+          + '<span class="mri-id">' + m.id + '</span></div>';
+      }).join('');
+      searchResults.style.display = 'block';
+      searchResults.querySelectorAll('.model-result-item').forEach(function(item){
+        item.addEventListener('click', function(){
+          var customLabel = document.getElementById('model-custom-label');
+          var customInput = document.getElementById('model-custom');
+          var isFree = item.dataset.free === 'true';
+          customInput.value = item.dataset.id;
+          document.getElementById('model-custom-name').textContent = item.dataset.name;
+          document.getElementById('model-custom-desc').textContent = item.dataset.id;
+          var badge = document.getElementById('model-custom-badge');
+          badge.textContent = isFree ? 'Gratis' : 'De pago';
+          badge.className = 'model-badge ' + (isFree ? 'free' : 'paid');
+          customLabel.style.display = 'flex';
+          customInput.checked = true;
+          document.getElementById('model-free-label').classList.remove('selected');
+          customLabel.classList.add('selected');
+          searchInput.value = '';
+          searchResults.style.display = 'none';
+        });
+      });
+    });
+
+    document.addEventListener('click', function(e){
+      if (!searchResults.contains(e.target) && e.target !== searchInput) {
+        searchResults.style.display = 'none';
+      }
+    });
+  }
+
+  var PAGE_FIELDS = {
+    index: [
+      { key: 'page_index_title', label: 'Título principal', placeholder: 'Ej: Soluciones para tu empresa', type: 'input' },
+      { key: 'page_index_subtitle', label: 'Subtítulo', placeholder: 'Ej: Llevamos tu negocio al siguiente nivel', type: 'input' },
+      { key: 'page_index_desc', label: 'Descripción', placeholder: 'Un párrafo breve sobre tu empresa...', type: 'textarea' }
+    ],
+    quienes: [
+      { key: 'page_quienes_title', label: 'Título', placeholder: 'Ej: ¿Quiénes somos?', type: 'input' },
+      { key: 'page_quienes_subtitle', label: 'Subtítulo', placeholder: 'Ej: Un equipo comprometido con tu éxito', type: 'input' },
+      { key: 'page_quienes_desc', label: 'Texto de la página', placeholder: 'Cuéntanos la historia de tu empresa...', type: 'textarea' }
+    ],
+    servicios: [
+      { key: 'page_servicios_title', label: 'Título', placeholder: 'Ej: Nuestros servicios', type: 'input' },
+      { key: 'page_servicios_subtitle', label: 'Subtítulo', placeholder: 'Ej: Todo lo que necesitas en un solo lugar', type: 'input' },
+      { key: 'page_servicios_desc', label: 'Descripción de servicios', placeholder: 'Describe tus servicios o productos...', type: 'textarea' }
+    ],
+    contacto: [
+      { key: 'page_contacto_title', label: 'Título', placeholder: 'Ej: Contacta con nosotros', type: 'input' },
+      { key: 'page_contacto_subtitle', label: 'Subtítulo', placeholder: 'Ej: Estamos aquí para ayudarte', type: 'input' },
+      { key: 'page_contacto_desc', label: 'Texto introductorio', placeholder: 'Ej: Rellena el formulario y te respondemos en 24h', type: 'input' }
+    ],
+    blog: [
+      { key: 'page_blog_title', label: 'Título del blog', placeholder: 'Ej: Noticias y consejos', type: 'input' },
+      { key: 'page_blog_subtitle', label: 'Subtítulo', placeholder: 'Ej: Artículos sobre nuestro sector', type: 'input' }
+    ]
+  };
+
+  function renderPageForm(page) {
+    var fields = PAGE_FIELDS[page] || [];
+    var html = fields.map(function(f){
+      var val = (siteConfig[f.key] || '').replace(/"/g, '&quot;');
+      if (f.type === 'textarea') {
+        return '<div><label>' + f.label + '</label><textarea rows="4" data-key="' + f.key + '" placeholder="' + f.placeholder + '">' + (siteConfig[f.key] || '') + '</textarea></div>';
+      }
+      return '<div><label>' + f.label + '</label><input type="text" data-key="' + f.key + '" placeholder="' + f.placeholder + '" value="' + val + '"></div>';
+    }).join('');
+    document.getElementById('misite-page-form').innerHTML = html;
+  }
+
 });
