@@ -31,9 +31,7 @@
     }
     .setup-header h1 { font-size: 1.5rem; font-weight: 600; color: var(--color-text, #cdccca); margin-bottom: 0.375rem; }
     .setup-header p { color: var(--color-text-muted, #797876); font-size: 0.875rem; margin-bottom: 2rem; }
-    .step-indicator {
-      display: flex; gap: 0.5rem; margin-bottom: 2rem;
-    }
+    .step-indicator { display: flex; gap: 0.5rem; margin-bottom: 2rem; }
     .step-dot {
       height: 4px; flex: 1; border-radius: 2px;
       background: var(--color-border, #393836);
@@ -66,6 +64,7 @@
       transition: background 180ms;
     }
     .btn-primary:hover { background: #0c4e54; }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-secondary {
       width: 100%; padding: 0.625rem;
       background: transparent;
@@ -75,12 +74,7 @@
       transition: all 180ms;
     }
     .btn-secondary:hover { border-color: var(--color-text-muted, #797876); color: var(--color-text, #cdccca); }
-    .error-msg {
-      color: #d163a7;
-      font-size: 0.8125rem;
-      margin-top: 0.75rem;
-      display: none;
-    }
+    .error-msg { color: #d163a7; font-size: 0.8125rem; margin-top: 0.75rem; display: none; }
     .step-panel { display: none; }
     .step-panel.active { display: block; }
     .step-title { font-size: 1.0625rem; font-weight: 600; color: var(--color-text, #cdccca); margin-bottom: 0.25rem; }
@@ -128,7 +122,7 @@
             <option value="Otro">Otro</option>
           </select>
         </div>
-        <button class="btn-primary" onclick="nextStep(2)">Continuar &rarr;</button>
+        <button class="btn-primary" id="btn-step1">Continuar →</button>
         <div class="error-msg" id="error-1"></div>
       </div>
 
@@ -141,8 +135,8 @@
           <input type="password" id="api-key" placeholder="sk-or-v1-..." autocomplete="off">
           <div class="hint">Obtén tu clave gratis en <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a>. Usamos el modelo gratuito por defecto.</div>
         </div>
-        <button class="btn-primary" onclick="nextStep(3)">Continuar &rarr;</button>
-        <button class="btn-secondary" onclick="nextStep(3)">Saltar por ahora</button>
+        <button class="btn-primary" id="btn-step2">Continuar →</button>
+        <button class="btn-secondary" id="btn-skip2">Saltar por ahora</button>
         <div class="error-msg" id="error-2"></div>
       </div>
 
@@ -158,11 +152,11 @@
           <label for="panel-password-confirm">Confirmar contraseña</label>
           <input type="password" id="panel-password-confirm" placeholder="Repite la contraseña" autocomplete="new-password">
         </div>
-        <button class="btn-primary" id="finish-btn" onclick="finishSetup()">Finalizar configuración</button>
+        <button class="btn-primary" id="finish-btn">Finalizar configuración</button>
         <div class="error-msg" id="error-3"></div>
       </div>
     </div>
   </div>
-  <script src="/setup.js" defer></script>
+  <script src="/setup.js"></script>
 </body>
 </html>
