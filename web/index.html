@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bienvenido</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #0f0e0c;
+      color: #cdccca;
+      text-align: center;
+      padding: 2rem;
+    }
+    .logo {
+      width: 48px;
+      height: 48px;
+      background: #01696f;
+      border-radius: 12px;
+      margin: 0 auto 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    h1 { font-size: clamp(1.5rem, 4vw, 2.5rem); font-weight: 600; color: #f0efed; margin-bottom: 0.75rem; }
+    p { color: #797876; font-size: 1rem; max-width: 40ch; margin: 0 auto 2.5rem; line-height: 1.6; }
+    a.panel-link {
+      display: inline-block;
+      padding: 0.625rem 1.5rem;
+      background: #01696f;
+      color: #fff;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: background 180ms;
+    }
+    a.panel-link:hover { background: #0c4e54; }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+      <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+      <path d="M2 17l10 5 10-5"/>
+      <path d="M2 12l10 5 10-5"/>
+    </svg>
+  </div>
+  <h1 id="company-name">Sitio en construcción</h1>
+  <p>Estamos preparando algo especial. Vuelve pronto.</p>
+  <a href="/panel" class="panel-link">Acceder al panel</a>
+  <script>
+    fetch('/api/setup/status').then(r => r.json()).then(data => {
+      if (!data.configured) window.location.href = '/setup';
+    }).catch(() => {});
+  </script>
+</body>
+</html>
