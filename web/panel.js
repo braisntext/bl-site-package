@@ -420,6 +420,7 @@ document.addEventListener("DOMContentLoaded", function () {
             cfg.ai_model.split("/").pop();
           document.getElementById("model-custom-desc").textContent =
             cfg.ai_model;
+          setCustomModelBadge(cfg.ai_model.includes(":free"));
           customLabel.style.display = "flex";
           customInput.checked = true;
           document
@@ -561,6 +562,29 @@ document.addEventListener("DOMContentLoaded", function () {
     var modelSearch = document.getElementById("model-search");
     var modelResults = document.getElementById("model-search-results");
     var searchTimeout;
+
+    function isFreeModel(model) {
+      return (
+        model.id.includes(":free") ||
+        model.pricing?.prompt === "0" ||
+        model.pricing?.prompt === 0
+      );
+    }
+
+    function getModelBadgeHTML(model) {
+      return isFreeModel(model)
+        ? '<span class="model-badge model-badge--free free">Gratis</span>'
+        : '<span class="model-badge model-badge--paid paid">De pago</span>';
+    }
+
+    function setCustomModelBadge(isFree) {
+      var badge = document.getElementById("model-custom-badge");
+      badge.textContent = isFree ? "Gratis" : "De pago";
+      badge.className =
+        "model-badge " +
+        (isFree ? "model-badge--free free" : "model-badge--paid paid");
+    }
+
     modelSearch.addEventListener("input", function () {
       clearTimeout(searchTimeout);
       var q = modelSearch.value.trim();
@@ -583,15 +607,20 @@ document.addEventListener("DOMContentLoaded", function () {
           }
           modelResults.innerHTML = models
             .map(function (m) {
+              var badge = getModelBadgeHTML(m);
               return (
                 '<div class="model-result-item" data-id="' +
                 m.id +
                 '" data-name="' +
                 (m.name || m.id).replace(/"/g, "") +
+                '" data-free="' +
+                (isFreeModel(m) ? "1" : "0") +
                 '"><span>' +
                 (m.name || m.id) +
-                '</span><span class="mri-id">' +
+                '</span><span style="display:flex;align-items:center;gap:0.5rem"><span class="mri-id">' +
                 m.id +
+                "</span>" +
+                badge +
                 "</span></div>"
               );
             })
@@ -603,11 +632,13 @@ document.addEventListener("DOMContentLoaded", function () {
               item.addEventListener("click", function () {
                 var id = item.dataset.id;
                 var name = item.dataset.name;
+                var isFree = item.dataset.free === "1";
                 var customLabel = document.getElementById("model-custom-label");
                 var customInput = document.getElementById("model-custom");
                 customInput.value = id;
                 document.getElementById("model-custom-name").textContent = name;
                 document.getElementById("model-custom-desc").textContent = id;
+                setCustomModelBadge(isFree);
                 customLabel.style.display = "flex";
                 customInput.checked = true;
                 document

@@ -5,6 +5,20 @@ import db, { getConfig } from "../db/database.js";
 const router = Router();
 const DEFAULT_AGENT_MODEL = "meta-llama/llama-3.1-8b-instruct:free";
 
+function extractReplyContent(content) {
+  if (typeof content === "string") return content.trim();
+  if (!Array.isArray(content)) return "";
+
+  return content
+    .map((part) => {
+      if (typeof part === "string") return part;
+      if (typeof part?.text === "string") return part.text;
+      return "";
+    })
+    .join("\n")
+    .trim();
+}
+
 // POST /api/chat/send
 router.post("/send", requireAuth, async (req, res) => {
   const { message } = req.body;
@@ -26,7 +40,11 @@ router.post("/send", requireAuth, async (req, res) => {
     "la empresa";
   const sector =
     process.env.CLIENT_SECTOR || getConfig("sector") || "industria";
-  const model = getConfig("ai_model") || DEFAULT_AGENT_MODEL;
+  const configuredModel = getConfig("ai_model")?.trim();
+  const model =
+    configuredModel && configuredModel !== "null"
+      ? configuredModel
+      : DEFAULT_AGENT_MODEL;
 
   const history = db
     .prepare("SELECT role, content FROM chat_history ORDER BY id DESC LIMIT 10")
@@ -69,8 +87,14 @@ router.post("/send", requireAuth, async (req, res) => {
     }
 
     const data = rawBody ? JSON.parse(rawBody) : {};
-    const reply =
-      data.choices?.[0]?.message?.content || "Sin respuesta del agente.";
+    const messageReply = extractReplyContent(
+      data.choices?.[0]?.message?.content,
+    );
+    const textReply =
+      typeof data.choices?.[0]?.text === "string"
+        ? data.choices[0].text.trim()
+        : "";
+    const reply = messageReply || textReply || "Sin respuesta del agente.";
 
     db.prepare("INSERT INTO chat_history (role, content) VALUES (?, ?)").run(
       "user",
