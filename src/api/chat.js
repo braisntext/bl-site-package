@@ -3,20 +3,55 @@ import { requireAuth } from "../middleware/auth.js";
 import db, { getConfig } from "../db/database.js";
 
 const router = Router();
-const DEFAULT_AGENT_MODEL = "meta-llama/llama-3.1-8b-instruct:free";
+const DEFAULT_AGENT_MODEL = "gpt-oss-20b:free";
+const FREE_MODELS_FALLBACK = [
+  "gpt-oss-20b:free",
+  "meta-llama/llama-3.1-8b-instruct:free",
+  "mistralai/mistral-7b-instruct:free",
+  "google/gemma-3-4b-it:free",
+  "meta-llama/llama-3.2-3b-instruct:free",
+];
 
-function extractReplyContent(content) {
-  if (typeof content === "string") return content.trim();
-  if (!Array.isArray(content)) return "";
+async function requestChatCompletion({ apiKey, model, messages, companyName, sector }) {
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + apiKey,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://github.com/braisntext/bl-site-package",
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        {
+          role: "system",
+          content: `Eres el agente de contenidos de ${companyName}, empresa del sector ${sector}. Tu especialidad es crear contenido de marketing: artículos de blog, textos web, posts para redes sociales. Responde siempre en español. Sé directo, práctico y orientado a resultados.`,
+        },
+        ...messages,
+      ],
+    }),
+  });
 
-  return content
-    .map((part) => {
-      if (typeof part === "string") return part;
-      if (typeof part?.text === "string") return part.text;
-      return "";
-    })
-    .join("\n")
-    .trim();
+  const rawBody = await response.text();
+  if (!response.ok) {
+    return {
+      ok: false,
+      status: response.status,
+      rawBody,
+      reply: null,
+    };
+  }
+
+  const data = rawBody ? JSON.parse(rawBody) : {};
+  const replyContent =
+    data.choices?.[0]?.message?.content || data.choices?.[0]?.text || null;
+
+  return {
+    ok: true,
+    status: response.status,
+    rawBody,
+    reply: typeof replyContent === "string" ? replyContent.trim() : null,
+  };
 }
 
 // POST /api/chat/send
@@ -45,6 +80,10 @@ router.post("/send", requireAuth, async (req, res) => {
     configuredModel && configuredModel !== "null"
       ? configuredModel
       : DEFAULT_AGENT_MODEL;
+  const modelsToTry = [
+    model,
+    ...FREE_MODELS_FALLBACK.filter((candidate) => candidate !== model),
+  ];
 
   const history = db
     .prepare("SELECT role, content FROM chat_history ORDER BY id DESC LIMIT 10")
@@ -57,55 +96,38 @@ router.post("/send", requireAuth, async (req, res) => {
   ];
 
   try {
-    const response = await fetch(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: "Bearer " + apiKey,
-          "Content-Type": "application/json",
-          "HTTP-Referer": "https://github.com/braisntext/bl-site-package",
-        },
-        body: JSON.stringify({
-          model,
-          messages: [
-            {
-              role: "system",
-              content: `Eres el agente de contenidos de ${companyName}, empresa del sector ${sector}. Tu especialidad es crear contenido de marketing: artículos de blog, textos web, posts para redes sociales. Responde siempre en español. Sé directo, práctico y orientado a resultados.`,
-            },
-            ...messages,
-          ],
-        }),
-      },
-    );
+    for (const candidateModel of modelsToTry) {
+      const result = await requestChatCompletion({
+        apiKey,
+        model: candidateModel,
+        messages,
+        companyName,
+        sector,
+      });
 
-    const rawBody = await response.text();
-    if (!response.ok) {
-      return res
-        .status(502)
-        .json({ error: "Error al contactar el agente de contenidos." });
+      if (result.ok && result.reply) {
+        db.prepare("INSERT INTO chat_history (role, content) VALUES (?, ?)").run(
+          "user",
+          message,
+        );
+        db.prepare("INSERT INTO chat_history (role, content) VALUES (?, ?)").run(
+          "assistant",
+          result.reply,
+        );
+
+        return res.json({ reply: result.reply, model: candidateModel });
+      }
+
+      if (!result.ok && result.status !== 429) {
+        return res
+          .status(502)
+          .json({ error: "Error al contactar el agente de contenidos." });
+      }
     }
 
-    const data = rawBody ? JSON.parse(rawBody) : {};
-    const messageReply = extractReplyContent(
-      data.choices?.[0]?.message?.content,
-    );
-    const textReply =
-      typeof data.choices?.[0]?.text === "string"
-        ? data.choices[0].text.trim()
-        : "";
-    const reply = messageReply || textReply || "Sin respuesta del agente.";
-
-    db.prepare("INSERT INTO chat_history (role, content) VALUES (?, ?)").run(
-      "user",
-      message,
-    );
-    db.prepare("INSERT INTO chat_history (role, content) VALUES (?, ?)").run(
-      "assistant",
-      reply,
-    );
-
-    res.json({ reply });
+    return res.json({
+      reply: "El agente está saturado en este momento. Inténtalo en unos segundos.",
+    });
   } catch (err) {
     console.error("Chat error:", err);
     res

@@ -411,7 +411,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (
           cfg.ai_model &&
-          cfg.ai_model !== "meta-llama/llama-3.1-8b-instruct:free"
+          cfg.ai_model !== "gpt-oss-20b:free"
         ) {
           var customLabel = document.getElementById("model-custom-label");
           var customInput = document.getElementById("model-custom");
