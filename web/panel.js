@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
     loginScreen.hidden = false;
     document.getElementById('panel-password').value = '';
     loginError.hidden = true;
+    miSiteInitialized = false; // reset so listeners re-register on next login
   }
   document.getElementById('panel-logout').addEventListener('click', doLogout);
   document.getElementById('sidebar-logout').addEventListener('click', doLogout);
@@ -216,9 +217,10 @@ document.addEventListener('DOMContentLoaded', function () {
   // ── MI SITIO WEB ─────────────────────────────────────────────────
   var siteConfig = {};
   var activePage = 'index';
+  var miSiteInitialized = false; // flag to prevent duplicate listeners
 
   function initMiSite() {
-    // Load current config
+    // Load/refresh config every time the section is opened
     fetch('/api/site/config').then(function(r){ return r.json(); }).then(function(cfg){
       siteConfig = cfg;
       renderPageForm(activePage);
@@ -242,6 +244,10 @@ document.addEventListener('DOMContentLoaded', function () {
         customLabel.classList.add('selected');
       }
     }).catch(function(){});
+
+    // Guard: only register event listeners once
+    if (miSiteInitialized) return;
+    miSiteInitialized = true;
 
     // Internal tabs
     document.querySelectorAll('.misite-tab').forEach(function(tab){
@@ -327,111 +333,78 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
 
-    // Model radio toggle
-    document.getElementById('model-free').addEventListener('change', function(){
-      document.getElementById('model-free-label').classList.add('selected');
-      document.getElementById('model-custom-label').classList.remove('selected');
+    // Model search
+    var modelSearch = document.getElementById('model-search');
+    var modelResults = document.getElementById('model-search-results');
+    var searchTimeout;
+    modelSearch.addEventListener('input', function(){
+      clearTimeout(searchTimeout);
+      var q = modelSearch.value.trim();
+      if (!q) { modelResults.style.display = 'none'; return; }
+      searchTimeout = setTimeout(async function(){
+        try {
+          var res = await fetch('/api/site/models?q=' + encodeURIComponent(q), { headers: authHeaders() });
+          var data = await res.json();
+          var models = data.models || [];
+          if (!models.length) { modelResults.style.display = 'none'; return; }
+          modelResults.innerHTML = models.map(function(m){
+            return '<div class="model-result-item" data-id="' + m.id + '" data-name="' + (m.name||m.id) + '"><span>' + (m.name||m.id) + '</span><span class="mri-id">' + m.id + '</span></div>';
+          }).join('');
+          modelResults.style.display = 'block';
+          modelResults.querySelectorAll('.model-result-item').forEach(function(item){
+            item.addEventListener('click', function(){
+              var id = item.dataset.id;
+              var name = item.dataset.name;
+              var customLabel = document.getElementById('model-custom-label');
+              var customInput = document.getElementById('model-custom');
+              customInput.value = id;
+              document.getElementById('model-custom-name').textContent = name;
+              document.getElementById('model-custom-desc').textContent = id;
+              customLabel.style.display = 'flex';
+              customInput.checked = true;
+              document.getElementById('model-free-label').classList.remove('selected');
+              customLabel.classList.add('selected');
+              modelResults.style.display = 'none';
+              modelSearch.value = '';
+            });
+          });
+        } catch { modelResults.style.display = 'none'; }
+      }, 350);
     });
 
-    // Model search
-    var KNOWN_MODELS = [
-      { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', free: false, cost: 'bajo' },
-      { id: 'openai/gpt-4o', name: 'GPT-4o', free: false, cost: 'alto' },
-      { id: 'anthropic/claude-3.5-haiku', name: 'Claude 3.5 Haiku', free: false, cost: 'bajo' },
-      { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', free: false, cost: 'medio' },
-      { id: 'anthropic/claude-3-opus', name: 'Claude 3 Opus', free: false, cost: 'alto' },
-      { id: 'mistralai/mistral-7b-instruct:free', name: 'Mistral 7B', free: true, cost: null },
-      { id: 'mistralai/mixtral-8x7b-instruct', name: 'Mixtral 8x7B', free: false, cost: 'medio' },
-      { id: 'google/gemma-3-27b-it:free', name: 'Gemma 3 27B', free: true, cost: null },
-      { id: 'google/gemini-flash-1.5', name: 'Gemini Flash 1.5', free: false, cost: 'bajo' },
-      { id: 'deepseek/deepseek-r1:free', name: 'DeepSeek R1', free: true, cost: null },
-      { id: 'qwen/qwen-2.5-72b-instruct:free', name: 'Qwen 2.5 72B', free: true, cost: null }
-    ];
-
-    var searchInput = document.getElementById('model-search');
-    var searchResults = document.getElementById('model-search-results');
-
-    searchInput.addEventListener('input', function(){
-      var q = searchInput.value.trim().toLowerCase();
-      if (!q) { searchResults.style.display = 'none'; return; }
-      var matches = KNOWN_MODELS.filter(function(m){
-        return m.id.toLowerCase().includes(q) || m.name.toLowerCase().includes(q);
-      });
-      if (!matches.length) { searchResults.style.display = 'none'; return; }
-      searchResults.innerHTML = matches.map(function(m){
-        var badge = m.free
-          ? '<span class="model-badge free">Gratis</span>'
-          : (m.cost === 'alto' ? '<span class="model-badge paid-high">De pago</span>' : '<span class="model-badge paid">De pago</span>');
-        return '<div class="model-result-item" data-id="' + m.id + '" data-name="' + m.name + '" data-free="' + m.free + '">'
-          + '<span>' + m.name + ' ' + badge + '</span>'
-          + '<span class="mri-id">' + m.id + '</span></div>';
-      }).join('');
-      searchResults.style.display = 'block';
-      searchResults.querySelectorAll('.model-result-item').forEach(function(item){
-        item.addEventListener('click', function(){
-          var customLabel = document.getElementById('model-custom-label');
-          var customInput = document.getElementById('model-custom');
-          var isFree = item.dataset.free === 'true';
-          customInput.value = item.dataset.id;
-          document.getElementById('model-custom-name').textContent = item.dataset.name;
-          document.getElementById('model-custom-desc').textContent = item.dataset.id;
-          var badge = document.getElementById('model-custom-badge');
-          badge.textContent = isFree ? 'Gratis' : 'De pago';
-          badge.className = 'model-badge ' + (isFree ? 'free' : 'paid');
-          customLabel.style.display = 'flex';
-          customInput.checked = true;
-          document.getElementById('model-free-label').classList.remove('selected');
-          customLabel.classList.add('selected');
-          searchInput.value = '';
-          searchResults.style.display = 'none';
-        });
-      });
+    document.getElementById('model-free-label').addEventListener('click', function(){
+      document.getElementById('model-free').checked = true;
+      document.getElementById('model-free-label').classList.add('selected');
+      var customLabel = document.getElementById('model-custom-label');
+      customLabel.classList.remove('selected');
     });
 
     document.addEventListener('click', function(e){
-      if (!searchResults.contains(e.target) && e.target !== searchInput) {
-        searchResults.style.display = 'none';
+      if (!modelResults.contains(e.target) && e.target !== modelSearch) {
+        modelResults.style.display = 'none';
       }
     });
   }
 
-  var PAGE_FIELDS = {
-    index: [
-      { key: 'page_index_title', label: 'Título principal', placeholder: 'Ej: Soluciones para tu empresa', type: 'input' },
-      { key: 'page_index_subtitle', label: 'Subtítulo', placeholder: 'Ej: Llevamos tu negocio al siguiente nivel', type: 'input' },
-      { key: 'page_index_desc', label: 'Descripción', placeholder: 'Un párrafo breve sobre tu empresa...', type: 'textarea' }
-    ],
-    quienes: [
-      { key: 'page_quienes_title', label: 'Título', placeholder: 'Ej: ¿Quiénes somos?', type: 'input' },
-      { key: 'page_quienes_subtitle', label: 'Subtítulo', placeholder: 'Ej: Un equipo comprometido con tu éxito', type: 'input' },
-      { key: 'page_quienes_desc', label: 'Texto de la página', placeholder: 'Cuéntanos la historia de tu empresa...', type: 'textarea' }
-    ],
-    servicios: [
-      { key: 'page_servicios_title', label: 'Título', placeholder: 'Ej: Nuestros servicios', type: 'input' },
-      { key: 'page_servicios_subtitle', label: 'Subtítulo', placeholder: 'Ej: Todo lo que necesitas en un solo lugar', type: 'input' },
-      { key: 'page_servicios_desc', label: 'Descripción de servicios', placeholder: 'Describe tus servicios o productos...', type: 'textarea' }
-    ],
-    contacto: [
-      { key: 'page_contacto_title', label: 'Título', placeholder: 'Ej: Contacta con nosotros', type: 'input' },
-      { key: 'page_contacto_subtitle', label: 'Subtítulo', placeholder: 'Ej: Estamos aquí para ayudarte', type: 'input' },
-      { key: 'page_contacto_desc', label: 'Texto introductorio', placeholder: 'Ej: Rellena el formulario y te respondemos en 24h', type: 'input' }
-    ],
-    blog: [
-      { key: 'page_blog_title', label: 'Título del blog', placeholder: 'Ej: Noticias y consejos', type: 'input' },
-      { key: 'page_blog_subtitle', label: 'Subtítulo', placeholder: 'Ej: Artículos sobre nuestro sector', type: 'input' }
-    ]
+  // ── RENDER PAGE FORM ─────────────────────────────────────────────
+  var pageFields = {
+    index:    [{ key:'page_index_title', label:'Título principal', type:'input' }, { key:'page_index_subtitle', label:'Subtítulo', type:'input' }, { key:'page_index_desc', label:'Descripción', type:'textarea' }],
+    quienes:  [{ key:'page_quienes_title', label:'Título', type:'input' }, { key:'page_quienes_subtitle', label:'Subtítulo', type:'input' }, { key:'page_quienes_desc', label:'Descripción', type:'textarea' }],
+    servicios:[{ key:'page_servicios_title', label:'Título', type:'input' }, { key:'page_servicios_subtitle', label:'Subtítulo', type:'input' }, { key:'page_servicios_desc', label:'Descripción', type:'textarea' }],
+    contacto: [{ key:'page_contacto_title', label:'Título', type:'input' }, { key:'page_contacto_subtitle', label:'Subtítulo', type:'input' }, { key:'page_contacto_desc', label:'Descripción', type:'textarea' }],
+    blog:     [{ key:'page_blog_title', label:'Título del blog', type:'input' }, { key:'page_blog_subtitle', label:'Subtítulo', type:'input' }]
   };
 
   function renderPageForm(page) {
-    var fields = PAGE_FIELDS[page] || [];
-    var html = fields.map(function(f){
+    var fields = pageFields[page] || [];
+    var container = document.getElementById('misite-page-form');
+    container.innerHTML = fields.map(function(f){
       var val = (siteConfig[f.key] || '').replace(/"/g, '&quot;');
       if (f.type === 'textarea') {
-        return '<div><label>' + f.label + '</label><textarea rows="4" data-key="' + f.key + '" placeholder="' + f.placeholder + '">' + (siteConfig[f.key] || '') + '</textarea></div>';
+        return '<div><label>' + f.label + '</label><textarea data-key="' + f.key + '" rows="4">' + (siteConfig[f.key] || '') + '</textarea></div>';
       }
-      return '<div><label>' + f.label + '</label><input type="text" data-key="' + f.key + '" placeholder="' + f.placeholder + '" value="' + val + '"></div>';
+      return '<div><label>' + f.label + '</label><input type="text" data-key="' + f.key + '" value="' + val + '"></div>';
     }).join('');
-    document.getElementById('misite-page-form').innerHTML = html;
   }
 
 });
