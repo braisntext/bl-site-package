@@ -75,7 +75,12 @@
       transition: all 180ms;
     }
     .btn-secondary:hover { border-color: var(--color-text-muted, #797876); color: var(--color-text, #cdccca); }
-    .error-msg { color: #d163a7; font-size: 0.8125rem; margin-top: 0.75rem; hidden: true; }
+    .error-msg {
+      color: #d163a7;
+      font-size: 0.8125rem;
+      margin-top: 0.75rem;
+      display: none;
+    }
     .step-panel { display: none; }
     .step-panel.active { display: block; }
     .step-title { font-size: 1.0625rem; font-weight: 600; color: var(--color-text, #cdccca); margin-bottom: 0.25rem; }
@@ -158,6 +163,6 @@
       </div>
     </div>
   </div>
-  <script src="/setup.js"></script>
+  <script src="/setup.js" defer></script>
 </body>
 </html>
