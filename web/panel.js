@@ -31,11 +31,20 @@ async function authenticatePanel(password) {
 
     state.authToken = data.token;
     state.authenticated = true;
-    document.getElementById('login-screen').classList.remove('visible');
+    state.companyName = data.companyName || '';
+
     document.getElementById('login-screen').hidden = true;
     document.getElementById('panel-app').hidden = false;
+
+    if (state.companyName) {
+      document.getElementById('company-name').textContent = state.companyName;
+      const sc = document.getElementById('sidebar-company');
+      if (sc) sc.textContent = state.companyName;
+    }
+
     updateGreeting();
     loadBlogArticles();
+    loadBlogStats();
     return true;
   } catch {
     showLoginError('Error de conexión. Intenta de nuevo.');
@@ -54,10 +63,10 @@ function logout() {
   state.authenticated = false;
   state.authToken = null;
   state.messages = [];
-  document.getElementById('login-screen').classList.add('visible');
   document.getElementById('login-screen').hidden = false;
   document.getElementById('panel-app').hidden = true;
   document.getElementById('panel-password').value = '';
+  setTimeout(() => document.getElementById('panel-password').focus(), 50);
 }
 
 // ── Navigation ────────────────────────────────────────────────
@@ -99,8 +108,8 @@ async function sendChatMessage() {
   input.value = '';
 
   const typingDiv = document.createElement('div');
-  typingDiv.className = 'chat-message agent-message typing-indicator';
-  typingDiv.innerHTML = '<p>…</p>';
+  typingDiv.className = 'chat-message agent-message';
+  typingDiv.innerHTML = '<p style="color:var(--text-muted)">Escribiendo…</p>';
   document.getElementById('chat-messages').appendChild(typingDiv);
 
   try {
@@ -124,8 +133,10 @@ async function sendChatMessage() {
 function preFillChat(prompt) {
   navigateToSection('chat');
   setTimeout(() => {
-    document.getElementById('chat-input').value = prompt;
-    document.getElementById('chat-input').focus();
+    const input = document.getElementById('chat-input');
+    input.value = prompt;
+    input.focus();
+    input.setSelectionRange(prompt.length, prompt.length);
   }, 100);
 }
 
@@ -134,7 +145,7 @@ async function loadBlogArticles() {
   const container = document.getElementById('articles-list');
   if (!container) return;
 
-  container.innerHTML = '<p style="color:var(--color-text-muted)">Cargando artículos…</p>';
+  container.innerHTML = '<p style="color:var(--text-muted);font-size:1.4rem;padding:1rem 0">Cargando artículos…</p>';
 
   try {
     const res = await fetch('/api/blog', {
@@ -143,57 +154,174 @@ async function loadBlogArticles() {
     const articles = await res.json();
 
     if (!articles.length) {
-      container.innerHTML = '<p style="color:var(--color-text-muted)">No hay artículos todavía. ¡Crea el primero!</p>';
+      container.innerHTML = `
+        <div class="empty-state">
+          <p>Todavía no tienes artículos.<br>¡Crea el primero con el botón de arriba!</p>
+        </div>`;
       return;
     }
 
     container.innerHTML = articles.map(a => `
-      <div class="article-item" style="padding:1rem;border:1px solid var(--color-border);border-radius:8px;margin-bottom:0.75rem;">
-        <div style="display:flex;justify-content:space-between;align-items:start;gap:1rem;">
-          <div>
-            <strong style="color:var(--color-text)">${escapeHtml(a.title)}</strong>
-            <span style="margin-left:0.5rem;font-size:0.75rem;padding:2px 8px;border-radius:99px;background:${a.status === 'published' ? '#01696f22' : 'var(--color-surface-offset)'};color:${a.status === 'published' ? '#4f98a3' : 'var(--color-text-muted)'}">${a.status === 'published' ? 'Publicado' : 'Borrador'}</span>
-            <div style="font-size:0.8125rem;color:var(--color-text-muted);margin-top:0.25rem">${new Date(a.created_at).toLocaleDateString('es-ES')}</div>
+      <div class="blog-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap">
+          <div style="flex:1">
+            <h3 style="margin-bottom:.4rem">${escapeHtml(a.title)}</h3>
+            <div class="blog-meta">
+              <span class="blog-date">${new Date(a.created_at).toLocaleDateString('es-ES', {day:'numeric',month:'short',year:'numeric'})}</span>
+              <span class="blog-status" style="background:${a.status === 'published' ? '#E8F5E9' : 'var(--bg-subtle)'};color:${a.status === 'published' ? '#2E7D32' : 'var(--text-muted)'}">
+                ${a.status === 'published' ? 'Publicado' : 'Borrador'}
+              </span>
+            </div>
+            ${a.content ? `<p class="blog-excerpt">${escapeHtml(a.content.slice(0, 140))}${a.content.length > 140 ? '…' : ''}</p>` : ''}
           </div>
-          <div style="display:flex;gap:0.5rem;flex-shrink:0">
-            <button onclick="toggleArticleStatus(${a.id}, '${a.status}')" style="font-size:0.75rem;padding:4px 10px;background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:6px;color:var(--color-text-muted);cursor:pointer">
-              ${a.status === 'published' ? 'Despublicar' : 'Publicar'}
-            </button>
-            <button onclick="deleteArticle(${a.id})" style="font-size:0.75rem;padding:4px 10px;background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:6px;color:#d163a7;cursor:pointer">Eliminar</button>
+          <div class="blog-actions" style="flex-shrink:0">
+            <button class="link-btn" onclick="openEditArticle(${a.id}, ${JSON.stringify(escapeHtml(a.title))}, ${JSON.stringify(escapeHtml(a.content || ''))}, '${a.status}')">Editar</button>
+            <button class="link-btn" onclick="toggleArticleStatus(${a.id}, '${a.status}')">${a.status === 'published' ? 'Despublicar' : 'Publicar'}</button>
+            <button class="link-btn" style="color:#c0392b" onclick="deleteArticle(${a.id})">Eliminar</button>
           </div>
         </div>
       </div>
     `).join('');
   } catch {
-    container.innerHTML = '<p style="color:#d163a7">Error al cargar los artículos.</p>';
+    container.innerHTML = '<p style="color:#c0392b;font-size:1.4rem">Error al cargar los artículos. Recarga la página.</p>';
+  }
+}
+
+async function loadBlogStats() {
+  const statEl = document.getElementById('stat-posts');
+  if (!statEl) return;
+  try {
+    const res = await fetch('/api/blog', {
+      headers: { 'Authorization': `Bearer ${state.authToken}` }
+    });
+    const articles = await res.json();
+    const published = articles.filter(a => a.status === 'published').length;
+    statEl.textContent = published;
+  } catch { /* silencioso */ }
+}
+
+// ── Article Form ──────────────────────────────────────────────
+function openNewArticle() {
+  const wrap = document.getElementById('article-form-wrap');
+  document.getElementById('article-form-title').textContent = 'Nuevo artículo';
+  document.getElementById('article-edit-id').value = '';
+  document.getElementById('article-title-input').value = '';
+  document.getElementById('article-content-input').value = '';
+  document.getElementById('article-status-select').value = 'draft';
+  document.getElementById('article-form-submit').textContent = 'Guardar artículo';
+  hideFormMsg();
+  wrap.hidden = false;
+  document.getElementById('article-title-input').focus();
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function openEditArticle(id, title, content, status) {
+  const wrap = document.getElementById('article-form-wrap');
+  document.getElementById('article-form-title').textContent = 'Editar artículo';
+  document.getElementById('article-edit-id').value = id;
+  document.getElementById('article-title-input').value = title;
+  document.getElementById('article-content-input').value = content;
+  document.getElementById('article-status-select').value = status;
+  document.getElementById('article-form-submit').textContent = 'Actualizar artículo';
+  hideFormMsg();
+  wrap.hidden = false;
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closeArticleForm() {
+  document.getElementById('article-form-wrap').hidden = true;
+  document.getElementById('article-form').reset();
+  document.getElementById('article-edit-id').value = '';
+}
+
+function showFormMsg(msg, isError = false) {
+  const el = document.getElementById('article-form-msg');
+  el.textContent = msg;
+  el.style.color = isError ? '#c0392b' : '#2E7D32';
+  el.hidden = false;
+}
+
+function hideFormMsg() {
+  document.getElementById('article-form-msg').hidden = true;
+}
+
+async function submitArticleForm(e) {
+  e.preventDefault();
+  const id = document.getElementById('article-edit-id').value;
+  const title = document.getElementById('article-title-input').value.trim();
+  const content = document.getElementById('article-content-input').value.trim();
+  const status = document.getElementById('article-status-select').value;
+
+  if (!title) { showFormMsg('El título es obligatorio.', true); return; }
+
+  const submitBtn = document.getElementById('article-form-submit');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Guardando…';
+  hideFormMsg();
+
+  try {
+    const url = id ? `/api/blog/${id}` : '/api/blog';
+    const method = id ? 'PUT' : 'POST';
+    const res = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${state.authToken}`
+      },
+      body: JSON.stringify({ title, content, status })
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      showFormMsg(data.error || 'Error al guardar.', true);
+      return;
+    }
+
+    showFormMsg(id ? '¡Artículo actualizado!' : '¡Artículo creado!');
+    setTimeout(() => {
+      closeArticleForm();
+      loadBlogArticles();
+      loadBlogStats();
+    }, 900);
+  } catch {
+    showFormMsg('Error de conexión.', true);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = id ? 'Actualizar artículo' : 'Guardar artículo';
   }
 }
 
 async function toggleArticleStatus(id, currentStatus) {
   const newStatus = currentStatus === 'published' ? 'draft' : 'published';
-  await fetch(`/api/blog/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.authToken}` },
-    body: JSON.stringify({ status: newStatus })
-  });
-  loadBlogArticles();
+  try {
+    await fetch(`/api/blog/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.authToken}` },
+      body: JSON.stringify({ status: newStatus })
+    });
+    loadBlogArticles();
+    loadBlogStats();
+  } catch { /* silencioso */ }
 }
 
 async function deleteArticle(id) {
-  if (!confirm('¿Eliminar este artículo?')) return;
-  await fetch(`/api/blog/${id}`, {
-    method: 'DELETE',
-    headers: { 'Authorization': `Bearer ${state.authToken}` }
-  });
-  loadBlogArticles();
+  if (!confirm('¿Eliminar este artículo? Esta acción no se puede deshacer.')) return;
+  try {
+    await fetch(`/api/blog/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${state.authToken}` }
+    });
+    loadBlogArticles();
+    loadBlogStats();
+  } catch { /* silencioso */ }
 }
 
 // ── UI Helpers ────────────────────────────────────────────────
 function updateGreeting() {
   const hour = new Date().getHours();
   let greeting = 'Buenos días';
-  if (hour >= 12 && hour < 18) greeting = 'Buenas tardes';
-  if (hour >= 18) greeting = 'Buenas noches';
+  if (hour >= 12 && hour < 20) greeting = 'Buenas tardes';
+  if (hour >= 20) greeting = 'Buenas noches';
   const el = document.getElementById('greeting');
   if (el) el.textContent = greeting;
 }
@@ -206,60 +334,76 @@ function escapeHtml(text) {
 
 // ── Initialize ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  // Check setup status
+
+  // Redirigir a setup si no está configurado
   fetch('/api/setup/status')
     .then(r => r.json())
     .then(data => { if (!data.configured) window.location.href = '/setup'; })
     .catch(() => {});
 
+  // Login
   document.getElementById('login-form').addEventListener('submit', (e) => {
     e.preventDefault();
     const password = document.getElementById('panel-password').value;
+    if (!password) return;
     authenticatePanel(password);
   });
 
+  // Logout
   document.getElementById('panel-logout')?.addEventListener('click', logout);
   document.getElementById('sidebar-logout')?.addEventListener('click', logout);
 
+  // Sidebar navigation
   document.querySelectorAll('.sidebar-nav-item').forEach(btn => {
     btn.addEventListener('click', () => navigateToSection(btn.dataset.section));
   });
 
+  // Chat
   document.getElementById('chat-send')?.addEventListener('click', sendChatMessage);
   document.getElementById('chat-input')?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); }
   });
 
+  // Quick actions (overview)
   document.querySelectorAll('.action-button').forEach(btn => {
     btn.addEventListener('click', () => {
       const action = btn.dataset.action;
-      if (action === 'create-article') preFillChat('Quiero crear un nuevo artículo para el blog. El tema es: ');
-      else if (action === 'edit-texts') navigateToSection('textos');
-      else if (action === 'view-blog') navigateToSection('blog');
+      if (action === 'create-article') {
+        navigateToSection('blog');
+        setTimeout(openNewArticle, 150);
+      } else if (action === 'edit-texts') {
+        navigateToSection('chat');
+      } else if (action === 'view-blog') {
+        navigateToSection('blog');
+      }
     });
   });
 
-  document.getElementById('new-article-btn')?.addEventListener('click', () => {
-    preFillChat('Quiero crear un nuevo artículo para el blog. El tema es: ');
-  });
+  // Botón nuevo artículo en blog
+  document.getElementById('new-article-btn')?.addEventListener('click', openNewArticle);
 
+  // Formulario de artículo
+  document.getElementById('article-form')?.addEventListener('submit', submitArticleForm);
+  document.getElementById('article-form-close')?.addEventListener('click', closeArticleForm);
+  document.getElementById('article-form-cancel')?.addEventListener('click', closeArticleForm);
+
+  // Suggestion chips
   document.querySelectorAll('.suggestion-chip').forEach(chip => {
     chip.addEventListener('click', () => {
-      document.getElementById('chat-input').value = chip.dataset.prompt;
-      document.getElementById('chat-input').focus();
+      const input = document.getElementById('chat-input');
+      input.value = chip.dataset.prompt;
+      input.focus();
     });
   });
 
+  // Textos web → abrir chat
   document.querySelectorAll('.texto-action').forEach(btn => {
     btn.addEventListener('click', () => {
-      const textContent = btn.parentElement.querySelector('h3')?.textContent || '';
-      preFillChat(`Mejora este texto: "${textContent}". `);
+      const section = btn.dataset.text || '';
+      preFillChat(`Quiero mejorar el texto de la sección "${section}" de mi web. `);
     });
   });
 
-  document.querySelectorAll('.history-view').forEach(btn => {
-    btn.addEventListener('click', () => navigateToSection('chat'));
-  });
-
+  // Focus en password al cargar
   document.getElementById('panel-password')?.focus();
 });

@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&display=swap">
+  <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/style-panel.css">
 </head>
 <body>
@@ -75,7 +76,7 @@
       <ul class="sidebar-nav">
         <li>
           <button class="sidebar-nav-item active" data-section="overview">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
             <span>Inicio</span>
           </button>
         </li>
@@ -87,7 +88,7 @@
         </li>
         <li>
           <button class="sidebar-nav-item" data-section="blog">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6.5a2.5 2.5 0 0 0-2.5 2.5"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
             <span>Blog</span>
           </button>
         </li>
@@ -107,7 +108,7 @@
 
       <div class="sidebar-footer">
         <button id="sidebar-logout" class="sidebar-logout-btn">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 3l7 7-7 7M9 12h13"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
           <span>Cerrar sesión</span>
         </button>
       </div>
@@ -142,13 +143,13 @@
           <h3>Acciones rápidas</h3>
           <div class="action-card">
             <h4>📝 Crear un nuevo artículo</h4>
-            <p>El agente te ayudará a escribir tu próximo artículo para el blog.</p>
+            <p>Escribe tu próximo artículo y publícalo directamente en tu blog.</p>
             <button class="btn-primary-sm action-button" data-action="create-article">Crear artículo</button>
           </div>
           <div class="action-card">
-            <h4>✏️ Editar un texto</h4>
-            <p>Mejora los textos de tu web con ayuda del agente de marketing.</p>
-            <button class="btn-primary-sm action-button" data-action="edit-texts">Editar textos</button>
+            <h4>✏️ Pedir ayuda al agente</h4>
+            <p>El agente de marketing IA te ayuda con ideas, textos y contenidos.</p>
+            <button class="btn-primary-sm action-button" data-action="edit-texts">Hablar con el agente</button>
           </div>
           <div class="action-card">
             <h4>📖 Ver mis artículos</h4>
@@ -161,8 +162,10 @@
       <!-- CHAT CON AGENTE -->
       <section data-panel="chat" class="panel-section" hidden>
         <div class="section-header">
-          <h2>Agente de marketing</h2>
-          <span class="status-badge">Online</span>
+          <div class="section-title">
+            <h2>Agente de marketing</h2>
+            <span class="status-badge">Online</span>
+          </div>
           <p>Crea artículos, edita textos y mejora tu presencia online.</p>
         </div>
 
@@ -194,10 +197,50 @@
         <div class="section-header">
           <div class="section-title">
             <h2>Blog</h2>
-            <button class="btn-primary-sm" id="new-article-btn">Nuevo artículo</button>
+            <button class="btn-primary-sm" id="new-article-btn">+ Nuevo artículo</button>
+          </div>
+          <p>Gestiona tus artículos publicados y borradores.</p>
+        </div>
+
+        <!-- FORMULARIO NUEVO ARTÍCULO (oculto por defecto) -->
+        <div id="article-form-wrap" class="article-form-wrap" hidden>
+          <div class="article-form-card">
+            <div class="article-form-header">
+              <h3 id="article-form-title">Nuevo artículo</h3>
+              <button id="article-form-close" class="btn-icon article-form-close" aria-label="Cerrar formulario">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <form id="article-form">
+              <input type="hidden" id="article-edit-id" value="">
+              <div class="form-group">
+                <label for="article-title-input" style="font-size:1.4rem;font-weight:500;color:var(--text-primary);display:block;margin-bottom:.5rem">Título</label>
+                <input type="text" id="article-title-input" placeholder="Título del artículo" required
+                  style="width:100%;padding:10px 14px;font-size:1.5rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-base);color:var(--text-primary);transition:border-color .2s,box-shadow .2s">
+              </div>
+              <div class="form-group" style="margin-top:1.2rem">
+                <label for="article-content-input" style="font-size:1.4rem;font-weight:500;color:var(--text-primary);display:block;margin-bottom:.5rem">Contenido</label>
+                <textarea id="article-content-input" rows="10" placeholder="Escribe el contenido del artículo aquí..."
+                  style="width:100%;padding:10px 14px;font-size:1.5rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-base);color:var(--text-primary);resize:vertical;font-family:var(--font-body);transition:border-color .2s,box-shadow .2s"></textarea>
+              </div>
+              <div class="form-group" style="margin-top:1.2rem">
+                <label for="article-status-select" style="font-size:1.4rem;font-weight:500;color:var(--text-primary);display:block;margin-bottom:.5rem">Estado</label>
+                <select id="article-status-select"
+                  style="width:auto;padding:8px 14px;font-size:1.4rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-base);color:var(--text-primary);cursor:pointer">
+                  <option value="draft">Borrador</option>
+                  <option value="published">Publicado</option>
+                </select>
+              </div>
+              <div class="article-form-actions" style="margin-top:1.6rem;display:flex;gap:1rem;align-items:center">
+                <button type="submit" class="btn-primary-sm" id="article-form-submit">Guardar artículo</button>
+                <button type="button" class="btn-ghost-sm" id="article-form-cancel">Cancelar</button>
+                <span id="article-form-msg" style="font-size:1.3rem;color:var(--accent);margin-left:.5rem" hidden></span>
+              </div>
+            </form>
           </div>
         </div>
-        <!-- panel.js inyecta los artículos aquí desde /api/blog -->
+
+        <!-- LISTA DE ARTÍCULOS -->
         <div id="articles-list"></div>
       </section>
 
@@ -269,6 +312,56 @@
     </main>
   </div>
 </div>
+
+<!-- ESTILOS DEL FORMULARIO DE ARTÍCULO -->
+<style>
+.article-form-wrap {
+  margin-bottom: 2rem;
+  animation: fadeIn .25s ease;
+}
+.article-form-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: 2rem;
+  box-shadow: var(--shadow-md);
+}
+.article-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.6rem;
+}
+.article-form-header h3 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+.article-form-close {
+  width: 3.2rem;
+  height: 3.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background .2s, color .2s;
+}
+.article-form-close:hover {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+}
+#article-title-input:focus,
+#article-content-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(184,57,28,.1);
+}
+</style>
 
 <script src="/panel.js" defer></script>
 
