@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { requireAuth } from "../middleware/auth.js";
-import db, { getConfig } from "../db/database.js";
+import db, { getConfig, setConfig } from "../db/database.js";
 
 const router = Router();
 const DEFAULT_AGENT_MODEL = "gpt-oss-20b:free";
@@ -11,26 +11,153 @@ const FREE_MODELS_FALLBACK = [
   "google/gemma-3-4b-it:free",
   "meta-llama/llama-3.2-3b-instruct:free",
 ];
+const ALLOWED_TEXT_KEYS = new Set([
+  "page_index_title",
+  "page_index_subtitle",
+  "page_index_desc",
+  "page_quienes_title",
+  "page_quienes_subtitle",
+  "page_quienes_desc",
+  "page_servicios_title",
+  "page_servicios_subtitle",
+  "page_servicios_desc",
+  "page_contacto_title",
+  "page_contacto_subtitle",
+  "page_contacto_desc",
+  "page_blog_title",
+  "page_blog_subtitle",
+]);
 
-async function requestChatCompletion({ apiKey, model, messages, companyName, sector }) {
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: "Bearer " + apiKey,
-      "Content-Type": "application/json",
-      "HTTP-Referer": "https://github.com/braisntext/bl-site-package",
+function generateSlug(title) {
+  return title
+    .toLowerCase()
+    .normalize("NFD")
+    .replaceAll(/[\u0300-\u036f]/g, "")
+    .replaceAll(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replaceAll(/\s+/g, "-")
+    .replaceAll(/-+/g, "-");
+}
+
+function createUniqueArticleSlug(title) {
+  let slug = generateSlug(title);
+  let suffix = 0;
+
+  while (
+    db
+      .prepare("SELECT id FROM articles WHERE slug = ?")
+      .get(slug + (suffix ? `-${suffix}` : ""))
+  ) {
+    suffix++;
+  }
+
+  if (suffix) slug = `${slug}-${suffix}`;
+  return slug;
+}
+
+function applyUpdateTextsAction(data) {
+  if (!data || typeof data !== "object") return null;
+
+  const updatedKeys = [];
+  for (const [key, value] of Object.entries(data)) {
+    if (!ALLOWED_TEXT_KEYS.has(key) || value === undefined || value === null) {
+      continue;
+    }
+    setConfig(key, String(value));
+    updatedKeys.push(key);
+  }
+
+  return updatedKeys.length ? { type: "texts_updated", keys: updatedKeys } : null;
+}
+
+function applyCreateArticleAction(data) {
+  if (!data || typeof data !== "object") return null;
+
+  const title = typeof data.title === "string" ? data.title.trim() : "";
+  const content = typeof data.content === "string" ? data.content.trim() : "";
+  const excerpt = typeof data.excerpt === "string" ? data.excerpt.trim() : "";
+  const status = data.status === "published" ? "published" : "draft";
+
+  if (!title || !content) return null;
+
+  const slug = createUniqueArticleSlug(title);
+  db.prepare(
+    "INSERT INTO articles (title, slug, content, excerpt, status) VALUES (?, ?, ?, ?, ?)",
+  ).run(title, slug, content, excerpt, status);
+
+  return { type: "article_created" };
+}
+
+function resolveActionResult(action) {
+  if (!action || typeof action !== "object") return null;
+  if (action.type === "update_texts") return applyUpdateTextsAction(action.data);
+  if (action.type === "create_article") return applyCreateArticleAction(action.data);
+  return null;
+}
+
+function applyAgentAction(reply) {
+  const actionMatch = reply.match(/<ACTION>([\s\S]*?)<\/ACTION>/);
+  let cleanReply = reply.replace(/<ACTION>[\s\S]*?<\/ACTION>/, "").trim();
+  let actionResult = null;
+
+  if (!actionMatch) {
+    return { reply: cleanReply || reply.trim(), actionResult };
+  }
+
+  try {
+    const action = JSON.parse(actionMatch[1]);
+    actionResult = resolveActionResult(action);
+  } catch {}
+
+  return { reply: cleanReply || reply.trim(), actionResult };
+}
+
+async function requestChatCompletion({
+  apiKey,
+  model,
+  messages,
+  companyName,
+  sector,
+}) {
+  const response = await fetch(
+    "https://openrouter.ai/api/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + apiKey,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://github.com/braisntext/bl-site-package",
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          {
+            role: "system",
+            content: `Eres el agente de marketing de ${companyName}, empresa del sector ${sector}. 
+Tu especialidad es crear contenido de marketing: artículos de blog, textos para páginas web y copies persuasivos.
+
+Tienes acceso directo al sitio web del cliente. Cuando el cliente te pida modificar textos de alguna página, DEBES responder con un JSON de acción además del texto. 
+
+Si el cliente pide cambiar textos de una página, responde SIEMPRE con este formato exacto al final de tu mensaje:
+<ACTION>{"type":"update_texts","data":{"key":"valor","key2":"valor2"}}</ACTION>
+
+Las keys disponibles para cada página son:
+- Inicio: page_index_title, page_index_subtitle, page_index_desc
+- Quiénes somos: page_quienes_title, page_quienes_subtitle, page_quienes_desc
+- Servicios: page_servicios_title, page_servicios_subtitle, page_servicios_desc
+- Contacto: page_contacto_title, page_contacto_subtitle, page_contacto_desc
+- Blog: page_blog_title, page_blog_subtitle
+
+Si el cliente pide crear un artículo de blog, responde con:
+<ACTION>{"type":"create_article","data":{"title":"título","content":"contenido completo","excerpt":"resumen corto","status":"draft"}}</ACTION>
+
+Si no hay acción que aplicar, no incluyas el bloque ACTION.`,
+          },
+          ...messages,
+        ],
+      }),
     },
-    body: JSON.stringify({
-      model,
-      messages: [
-        {
-          role: "system",
-          content: `Eres el agente de contenidos de ${companyName}, empresa del sector ${sector}. Tu especialidad es crear contenido de marketing: artículos de blog, textos web, posts para redes sociales. Responde siempre en español. Sé directo, práctico y orientado a resultados.`,
-        },
-        ...messages,
-      ],
-    }),
-  });
+  );
 
   const rawBody = await response.text();
   if (!response.ok) {
@@ -106,16 +233,19 @@ router.post("/send", requireAuth, async (req, res) => {
       });
 
       if (result.ok && result.reply) {
-        db.prepare("INSERT INTO chat_history (role, content) VALUES (?, ?)").run(
-          "user",
-          message,
-        );
-        db.prepare("INSERT INTO chat_history (role, content) VALUES (?, ?)").run(
-          "assistant",
-          result.reply,
-        );
+        const applied = applyAgentAction(result.reply);
+        db.prepare(
+          "INSERT INTO chat_history (role, content) VALUES (?, ?)",
+        ).run("user", message);
+        db.prepare(
+          "INSERT INTO chat_history (role, content) VALUES (?, ?)",
+        ).run("assistant", applied.reply);
 
-        return res.json({ reply: result.reply, model: candidateModel });
+        return res.json({
+          reply: applied.reply,
+          action: applied.actionResult,
+          model: candidateModel,
+        });
       }
 
       if (!result.ok && result.status !== 429) {
@@ -126,7 +256,8 @@ router.post("/send", requireAuth, async (req, res) => {
     }
 
     return res.json({
-      reply: "El agente está saturado en este momento. Inténtalo en unos segundos.",
+      reply:
+        "El agente está saturado en este momento. Inténtalo en unos segundos.",
     });
   } catch (err) {
     console.error("Chat error:", err);

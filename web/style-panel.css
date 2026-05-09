@@ -482,6 +482,16 @@ body {
   color: var(--text-secondary, #555);
   border: 1px solid var(--border, #ddd);
 }
+.system-message {
+  justify-content: center;
+}
+.system-message p {
+  background: #ecfdf3;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  font-size: 1.2rem;
+  max-width: 100%;
+}
 
 .chat-suggestions {
   padding: 0.8rem 0;

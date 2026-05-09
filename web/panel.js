@@ -171,8 +171,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function appendMessage(role, text) {
     var div = document.createElement("div");
-    div.className =
-      "chat-message " + (role === "user" ? "user-message" : "agent-message");
+    var roleClass = "agent-message";
+    if (role === "user") roleClass = "user-message";
+    if (role === "system") roleClass = "system-message";
+    div.className = "chat-message " + roleClass;
     var p = document.createElement("p");
     p.textContent = text;
     div.appendChild(p);
@@ -194,6 +196,35 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       var data = await res.json();
       appendMessage("agent", data.reply || "Sin respuesta");
+
+      if (data.action) {
+        if (data.action.type === "texts_updated") {
+          appendMessage(
+            "system",
+            "✓ Textos actualizados en el sitio web. Los cambios ya son visibles para tus visitantes.",
+          );
+          if (
+            document
+              .querySelector('[data-section="misite"]')
+              ?.classList.contains("active")
+          ) {
+            initMiSite();
+          }
+        }
+        if (data.action.type === "article_created") {
+          appendMessage(
+            "system",
+            "✓ Artículo creado como borrador. Puedes revisarlo y publicarlo en la sección Blog.",
+          );
+          if (
+            document
+              .querySelector('[data-section="blog"]')
+              ?.classList.contains("active")
+          ) {
+            loadArticles();
+          }
+        }
+      }
     } catch {
       appendMessage("agent", "Error de conexión. Intenta de nuevo.");
     }
@@ -409,10 +440,7 @@ document.addEventListener("DOMContentLoaded", function () {
           img.style.display = "block";
           document.getElementById("logo-placeholder").style.display = "none";
         }
-        if (
-          cfg.ai_model &&
-          cfg.ai_model !== "gpt-oss-20b:free"
-        ) {
+        if (cfg.ai_model && cfg.ai_model !== "gpt-oss-20b:free") {
           var customLabel = document.getElementById("model-custom-label");
           var customInput = document.getElementById("model-custom");
           customInput.value = cfg.ai_model;
