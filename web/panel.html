@@ -288,6 +288,24 @@
                 <span>Mi servicio</span>
               </button>
             </li>
+            <li>
+              <button class="sidebar-nav-item" data-section="settings">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="12" cy="12" r="3" />
+                  <path
+                    d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 1.55V22a2 2 0 1 1-4 0v-.05a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06A2 2 0 1 1 3.24 18l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.05a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06A2 2 0 1 1 6.03 4.2l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.05a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06A2 2 0 1 1 20.76 6l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.05a1.7 1.7 0 0 0-1.55 1z"
+                  />
+                </svg>
+                <span>Ajustes</span>
+              </button>
+            </li>
           </ul>
 
           <div class="sidebar-footer">
@@ -800,6 +818,29 @@
                   Te responderemos en menos de 24 horas.
                 </p>
               </div>
+            </div>
+          </section>
+
+          <!-- AJUSTES -->
+          <section data-panel="settings" class="panel-section" hidden>
+            <div class="section-header">
+              <h2>Ajustes</h2>
+              <p>
+                Herramientas delicadas para reiniciar la configuración del
+                sitio.
+              </p>
+            </div>
+            <div class="settings-card">
+              <h3>Resetear configuración</h3>
+              <p class="settings-warning">
+                Esto borra la configuración, los artículos, el historial del
+                chat y los mensajes de contacto. Tendrás que volver a completar
+                el asistente de inicio.
+              </p>
+              <button id="reset-config-btn" class="btn-danger-sm">
+                Borrar todo y empezar de nuevo
+              </button>
+              <p id="reset-config-msg" class="settings-status" hidden></p>
             </div>
           </section>
         </main>

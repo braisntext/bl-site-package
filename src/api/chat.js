@@ -11,7 +11,8 @@ router.post("/send", requireAuth, async (req, res) => {
   if (!message) return res.status(400).json({ error: "Mensaje requerido" });
 
   const apiKey =
-    process.env.OPENROUTER_API_KEY || getConfig("openrouter_api_key");
+    process.env.OPENROUTER_API_KEY?.trim() ||
+    getConfig("openrouter_api_key")?.trim();
   if (!apiKey) {
     return res.json({
       reply:
@@ -43,7 +44,7 @@ router.post("/send", requireAuth, async (req, res) => {
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${apiKey}`,
+          Authorization: "Bearer " + apiKey,
           "Content-Type": "application/json",
           "HTTP-Referer": "https://github.com/braisntext/bl-site-package",
         },

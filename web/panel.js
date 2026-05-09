@@ -59,6 +59,40 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   document.getElementById("panel-logout").addEventListener("click", doLogout);
   document.getElementById("sidebar-logout").addEventListener("click", doLogout);
+  document
+    .getElementById("reset-config-btn")
+    .addEventListener("click", async function () {
+      var firstConfirm = confirm(
+        "¿Seguro que quieres borrar toda la configuración y el contenido?",
+      );
+      if (!firstConfirm) return;
+
+      var secondConfirm = confirm(
+        "Esta acción es irreversible. Se borrarán la configuración, los artículos, el chat y los mensajes. ¿Continuar?",
+      );
+      if (!secondConfirm) return;
+
+      var status = document.getElementById("reset-config-msg");
+      status.hidden = false;
+      status.textContent = "Reseteando configuración...";
+
+      try {
+        var res = await fetch("/api/setup/reset", {
+          method: "DELETE",
+          headers: authHeaders(),
+        });
+        var data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || "No se pudo resetear la configuración");
+        }
+
+        token = null;
+        window.location.href = "/setup";
+      } catch (err) {
+        status.textContent =
+          err.message || "Error al resetear la configuración";
+      }
+    });
 
   // ── NAVIGATION ───────────────────────────────────────────────────
   var navItems = document.querySelectorAll(".sidebar-nav-item");
