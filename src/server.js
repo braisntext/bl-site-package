@@ -14,15 +14,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Ensure uploads folder is served
 const uploadsDir = join(__dirname, '../data/uploads');
 mkdirSync(uploadsDir, { recursive: true });
 
-// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// CSP header
 app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
@@ -31,7 +28,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve uploaded files
 app.use('/uploads', express.static(uploadsDir));
 
 // API routes
@@ -41,7 +37,7 @@ app.use('/api/blog', blogRouter);
 app.use('/api/setup', setupRouter);
 app.use('/api/site', siteRouter);
 
-// Panel & Setup routes
+// Panel & Setup
 app.get('/setup', (req, res) => res.sendFile(join(__dirname, '../web/setup.html')));
 app.get('/panel', (req, res) => {
   const configured = !!(process.env.PANEL_PASSWORD || getConfig('panel_password'));
@@ -54,6 +50,9 @@ const pages = ['quienes-somos', 'servicios', 'contacto', 'blog'];
 for (const p of pages) {
   app.get('/' + p, (req, res) => res.sendFile(join(__dirname, '../web/' + p + '.html')));
 }
+
+// Blog article individual page
+app.get('/blog/:slug', (req, res) => res.sendFile(join(__dirname, '../web/blog-post.html')));
 
 // Static files
 app.use(express.static(join(__dirname, '../web')));

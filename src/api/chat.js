@@ -1,10 +1,11 @@
 import { Router } from 'express';
-import { verifyJWT } from '../middleware/auth.js';
+import { requireAuth } from '../middleware/auth.js';
 import db, { getConfig } from '../db/database.js';
 
 const router = Router();
 
-router.post('/', verifyJWT, async (req, res) => {
+// POST /api/chat/send
+router.post('/send', requireAuth, async (req, res) => {
   const { message } = req.body;
   if (!message) return res.status(400).json({ error: 'Mensaje requerido' });
 
@@ -15,7 +16,7 @@ router.post('/', verifyJWT, async (req, res) => {
 
   const companyName = process.env.CLIENT_COMPANY_NAME || getConfig('company_name') || 'la empresa';
   const sector = process.env.CLIENT_SECTOR || getConfig('sector') || 'industria';
-  const model = process.env.CONTENT_AGENT_MODEL || getConfig('content_agent_model') || 'google/gemini-2.0-flash-lite';
+  const model = getConfig('ai_model') || process.env.CONTENT_AGENT_MODEL || 'meta-llama/llama-3.1-8b-instruct:free';
 
   const history = db.prepare('SELECT role, content FROM chat_history ORDER BY id DESC LIMIT 10').all().reverse();
 

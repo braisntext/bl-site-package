@@ -1,4 +1,4 @@
-/* Public site renderer — shared by all 5 pages */
+/* Public site renderer — shared by all public pages */
 var _siteConfig = null;
 
 function getConfig(cb) {
@@ -31,8 +31,8 @@ function navHTML(active, cfg) {
   return '<nav class="site-nav"><div class="site-nav-inner"><a href="/" class="site-nav-brand">' + logoHTML(cfg) + '<span>' + company + '</span></a><div class="site-nav-links">' + linksHTML + '</div></nav>';
 }
 
-function constructionHTML(cfg, page) {
-  return '<div class="construction-wrap"><div class="construction-icon">🚧</div><h1>' + (cfg.company_name || 'Sitio en construcción') + '</h1><p>Estamos preparando esta página. Vuelve pronto.</p><a href="/" class="site-btn">Volver al inicio</a></div>';
+function constructionHTML() {
+  return '<div class="construction-wrap"><div class="construction-icon">🚧</div><h1>Página en construcción</h1><p>Estamos preparando esta página. Vuelve pronto.</p><a href="/" class="site-btn">Volver al inicio</a></div>';
 }
 
 function footerHTML(cfg) {
@@ -50,7 +50,7 @@ window.renderPage = function(page) {
     if (page === 'index') {
       document.title = cfg.company_name || 'Inicio';
       if (!cfg.page_index_title) {
-        content = constructionHTML(cfg, page);
+        content = constructionHTML();
       } else {
         content = '<main class="site-hero"><div class="site-hero-inner"><h1>' + cfg.page_index_title + '</h1>' +
           (cfg.page_index_subtitle ? '<p class="site-hero-subtitle">' + cfg.page_index_subtitle + '</p>' : '') +
@@ -60,7 +60,7 @@ window.renderPage = function(page) {
     } else if (page === 'quienes') {
       document.title = (cfg.page_quienes_title || 'Quiénes somos') + (cfg.company_name ? ' — ' + cfg.company_name : '');
       if (!cfg.page_quienes_title) {
-        content = constructionHTML(cfg, page);
+        content = constructionHTML();
       } else {
         content = '<main class="site-page"><div class="site-page-inner"><h1>' + cfg.page_quienes_title + '</h1>' +
           (cfg.page_quienes_subtitle ? '<p class="site-page-subtitle">' + cfg.page_quienes_subtitle + '</p>' : '') +
@@ -70,7 +70,7 @@ window.renderPage = function(page) {
     } else if (page === 'servicios') {
       document.title = (cfg.page_servicios_title || 'Servicios') + (cfg.company_name ? ' — ' + cfg.company_name : '');
       if (!cfg.page_servicios_title) {
-        content = constructionHTML(cfg, page);
+        content = constructionHTML();
       } else {
         content = '<main class="site-page"><div class="site-page-inner"><h1>' + cfg.page_servicios_title + '</h1>' +
           (cfg.page_servicios_subtitle ? '<p class="site-page-subtitle">' + cfg.page_servicios_subtitle + '</p>' : '') +
@@ -80,7 +80,7 @@ window.renderPage = function(page) {
     } else if (page === 'contacto') {
       document.title = (cfg.page_contacto_title || 'Contacto') + (cfg.company_name ? ' — ' + cfg.company_name : '');
       if (!cfg.page_contacto_title) {
-        content = constructionHTML(cfg, page);
+        content = constructionHTML();
       } else {
         content = '<main class="site-page"><div class="site-page-inner"><h1>' + cfg.page_contacto_title + '</h1>' +
           (cfg.page_contacto_subtitle ? '<p class="site-page-subtitle">' + cfg.page_contacto_subtitle + '</p>' : '') +
@@ -123,4 +123,47 @@ function loadBlogPosts() {
       var list = document.getElementById('blog-posts-list');
       if (list) list.innerHTML = '<p class="site-empty">No se pudieron cargar los artículos.</p>';
     });
+}
+
+// Render a single blog post — called from blog-post.html
+window.renderBlogPost = function() {
+  var slug = window.location.pathname.replace('/blog/', '').replace(/\//g, '');
+  if (!slug) { window.location.href = '/blog'; return; }
+
+  fetch('/api/blog/posts/' + slug)
+    .then(function(r){
+      if (!r.ok) throw new Error('not found');
+      return r.json();
+    })
+    .then(function(post) {
+      getConfig(function(cfg) {
+        document.title = post.title + (cfg.company_name ? ' — ' + cfg.company_name : '');
+        var root = document.getElementById('site-root');
+        var html = navHTML('blog', cfg);
+        html += '<main class="site-page"><div class="site-page-inner site-post-content">' +
+          '<a href="/blog" class="site-back-link">← Volver al blog</a>' +
+          '<h1>' + post.title + '</h1>' +
+          '<span class="site-post-date">' + new Date(post.created_at).toLocaleDateString('es-ES') + '</span>' +
+          '<div class="site-post-body">' + formatContent(post.content) + '</div>' +
+          '</div></main>';
+        html += footerHTML(cfg);
+        root.innerHTML = html;
+      });
+    })
+    .catch(function() {
+      getConfig(function(cfg) {
+        var root = document.getElementById('site-root');
+        root.innerHTML = navHTML('blog', cfg) +
+          '<main class="site-page"><div class="site-page-inner"><h1>Artículo no encontrado</h1><a href="/blog" class="site-btn">Volver al blog</a></div></main>' +
+          footerHTML(cfg);
+      });
+    });
+};
+
+// Convert plain text content to HTML paragraphs
+function formatContent(text) {
+  if (!text) return '';
+  return text.split(/\n\n+/).map(function(p){
+    return '<p>' + p.replace(/\n/g, '<br>') + '</p>';
+  }).join('');
 }

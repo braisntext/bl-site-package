@@ -28,7 +28,7 @@ const upload = multer({
 
 const router = express.Router();
 
-// GET /api/site/config — public, used by public pages
+// GET /api/site/config — public
 router.get('/config', (req, res) => {
   const keys = [
     'company_name', 'sector',
@@ -44,7 +44,7 @@ router.get('/config', (req, res) => {
   res.json(config);
 });
 
-// POST /api/site/texts — save page texts (requires auth)
+// POST /api/site/texts — save page texts
 router.post('/texts', requireAuth, (req, res) => {
   const allowed = [
     'page_index_title', 'page_index_subtitle', 'page_index_desc',
@@ -60,12 +60,30 @@ router.post('/texts', requireAuth, (req, res) => {
   res.json({ success: true });
 });
 
-// POST /api/site/logo — upload logo (requires auth)
+// POST /api/site/logo — upload logo
 router.post('/logo', requireAuth, upload.single('logo'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No se recibió ningún archivo' });
   const ext = req.file.originalname.split('.').pop();
   setConfig('logo_ext', ext);
   res.json({ success: true, path: '/uploads/logo.' + ext });
+});
+
+// GET /api/site/models?q=term — proxy OpenRouter model list
+router.get('/models', requireAuth, async (req, res) => {
+  const q = (req.query.q || '').toLowerCase().trim();
+  const apiKey = process.env.OPENROUTER_API_KEY || getConfig('openrouter_api_key');
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+    const response = await fetch('https://openrouter.ai/api/v1/models', { headers });
+    const data = await response.json();
+    let models = (data.data || []).map(m => ({ id: m.id, name: m.name || m.id }));
+    if (q) models = models.filter(m => m.id.toLowerCase().includes(q) || m.name.toLowerCase().includes(q));
+    res.json({ models: models.slice(0, 30) });
+  } catch (err) {
+    console.error('Models fetch error:', err);
+    res.status(500).json({ error: 'No se pudo obtener la lista de modelos', models: [] });
+  }
 });
 
 export default router;

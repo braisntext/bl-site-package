@@ -22,6 +22,10 @@ document.addEventListener('DOMContentLoaded', function () {
         token = data.token;
         loginScreen.hidden = true;
         panelApp.hidden = false;
+        if (data.companyName) {
+          document.getElementById('company-name').textContent = data.companyName;
+          document.getElementById('sidebar-company').textContent = data.companyName;
+        }
         initPanel();
       } else {
         loginError.textContent = data.error || 'Contraseña incorrecta';
@@ -33,6 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  // x-panel-token used by requireAuth middleware (JWT sent as custom header)
   function authHeaders() {
     return { 'Content-Type': 'application/json', 'x-panel-token': token };
   }
@@ -44,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
     loginScreen.hidden = false;
     document.getElementById('panel-password').value = '';
     loginError.hidden = true;
-    miSiteInitialized = false; // reset so listeners re-register on next login
+    miSiteInitialized = false;
   }
   document.getElementById('panel-logout').addEventListener('click', doLogout);
   document.getElementById('sidebar-logout').addEventListener('click', doLogout);
@@ -68,7 +73,6 @@ document.addEventListener('DOMContentLoaded', function () {
     btn.addEventListener('click', function(){ showSection(btn.dataset.section); });
   });
 
-  // Quick action buttons
   document.querySelectorAll('.action-button').forEach(function(btn){
     btn.addEventListener('click', function(){
       var action = btn.dataset.action;
@@ -80,12 +84,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ── INIT PANEL ───────────────────────────────────────────────────
   function initPanel() {
-    // Greeting
     var h = new Date().getHours();
     var greet = h < 12 ? 'Buenos días' : h < 20 ? 'Buenas tardes' : 'Buenas noches';
     document.getElementById('greeting').textContent = greet;
 
-    // Company name from setup config
     fetch('/api/setup/status').then(function(r){ return r.json(); }).then(function(d){
       var name = d.company_name || '';
       if (name) {
@@ -94,7 +96,6 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }).catch(function(){});
 
-    // Stats
     fetch('/api/blog/posts').then(function(r){ return r.json(); }).then(function(d){
       var published = (d.posts||[]).filter(function(p){ return p.status==='published'; }).length;
       document.getElementById('stat-posts').textContent = published;
@@ -171,67 +172,78 @@ document.addEventListener('DOMContentLoaded', function () {
     };
     var url = id ? '/api/blog/posts/' + id : '/api/blog/posts';
     var method = id ? 'PUT' : 'POST';
+    var msgEl = document.getElementById('article-form-msg');
     try {
       var res = await fetch(url, { method: method, headers: authHeaders(), body: JSON.stringify(body) });
       var data = await res.json();
       if (data.success || data.id) {
         articleFormWrap.hidden = true;
         loadArticles();
+        document.getElementById('stat-posts').textContent = '…';
+        fetch('/api/blog/posts').then(function(r){ return r.json(); }).then(function(d){
+          var published = (d.posts||[]).filter(function(p){ return p.status==='published'; }).length;
+          document.getElementById('stat-posts').textContent = published;
+        }).catch(function(){});
+      } else {
+        msgEl.textContent = data.error || 'Error al guardar';
+        msgEl.hidden = false;
       }
-    } catch { /* silent */ }
+    } catch {
+      msgEl.textContent = 'Error de conexión';
+      msgEl.hidden = false;
+    }
   });
 
   function loadArticles() {
-    fetch('/api/blog/posts').then(function(r){ return r.json(); }).then(function(data){
-      var list = document.getElementById('articles-list');
-      var posts = data.posts || [];
-      if (!posts.length) { list.innerHTML = '<p style="color:var(--text-muted);padding:2rem 0">Aún no tienes artículos.</p>'; return; }
-      list.innerHTML = posts.map(function(p){
-        var badge = p.status === 'published'
-          ? '<span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:20px;font-size:0.75rem;font-weight:600">Publicado</span>'
-          : '<span style="background:#f3f4f6;color:#6b7280;padding:2px 8px;border-radius:20px;font-size:0.75rem;font-weight:600">Borrador</span>';
-        return '<div class="article-row"><div class="article-row-info"><span class="article-row-title">' + p.title + '</span>' + badge + '</div><div class="article-row-actions"><button class="btn-ghost-sm" data-edit="' + p.id + '">Editar</button><button class="btn-ghost-sm btn-danger" data-delete="' + p.id + '">Eliminar</button></div></div>';
-      }).join('');
-      list.querySelectorAll('[data-edit]').forEach(function(btn){
-        btn.addEventListener('click', function(){
-          var post = posts.find(function(p){ return p.id == btn.dataset.edit; });
-          if (!post) return;
-          document.getElementById('article-edit-id').value = post.id;
-          document.getElementById('article-title-input').value = post.title;
-          document.getElementById('article-content-input').value = post.content;
-          document.getElementById('article-status-select').value = post.status;
-          document.getElementById('article-form-title').textContent = 'Editar artículo';
-          articleFormWrap.hidden = false;
+    fetch('/api/blog/posts', { headers: { 'x-panel-token': token } })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        var list = document.getElementById('articles-list');
+        var posts = data.posts || [];
+        if (!posts.length) { list.innerHTML = '<p style="color:var(--text-muted);padding:2rem 0">Aún no tienes artículos.</p>'; return; }
+        list.innerHTML = posts.map(function(p){
+          var badge = p.status === 'published'
+            ? '<span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:20px;font-size:0.75rem;font-weight:600">Publicado</span>'
+            : '<span style="background:#f3f4f6;color:#6b7280;padding:2px 8px;border-radius:20px;font-size:0.75rem;font-weight:600">Borrador</span>';
+          return '<div class="article-row"><div class="article-row-info"><span class="article-row-title">' + p.title + '</span>' + badge + '</div><div class="article-row-actions"><button class="btn-ghost-sm" data-edit="' + p.id + '">Editar</button><button class="btn-ghost-sm btn-danger" data-delete="' + p.id + '">Eliminar</button></div></div>';
+        }).join('');
+        list.querySelectorAll('[data-edit]').forEach(function(btn){
+          btn.addEventListener('click', function(){
+            var post = posts.find(function(p){ return p.id == btn.dataset.edit; });
+            if (!post) return;
+            document.getElementById('article-edit-id').value = post.id;
+            document.getElementById('article-title-input').value = post.title;
+            document.getElementById('article-content-input').value = post.content;
+            document.getElementById('article-status-select').value = post.status;
+            document.getElementById('article-form-title').textContent = 'Editar artículo';
+            articleFormWrap.hidden = false;
+          });
         });
-      });
-      list.querySelectorAll('[data-delete]').forEach(function(btn){
-        btn.addEventListener('click', async function(){
-          if (!confirm('¿Eliminar este artículo?')) return;
-          await fetch('/api/blog/posts/' + btn.dataset.delete, { method: 'DELETE', headers: authHeaders() });
-          loadArticles();
+        list.querySelectorAll('[data-delete]').forEach(function(btn){
+          btn.addEventListener('click', async function(){
+            if (!confirm('¿Eliminar este artículo?')) return;
+            await fetch('/api/blog/posts/' + btn.dataset.delete, { method: 'DELETE', headers: authHeaders() });
+            loadArticles();
+          });
         });
-      });
-    }).catch(function(){});
+      }).catch(function(){});
   }
 
   // ── MI SITIO WEB ─────────────────────────────────────────────────
   var siteConfig = {};
   var activePage = 'index';
-  var miSiteInitialized = false; // flag to prevent duplicate listeners
+  var miSiteInitialized = false;
 
   function initMiSite() {
-    // Load/refresh config every time the section is opened
     fetch('/api/site/config').then(function(r){ return r.json(); }).then(function(cfg){
       siteConfig = cfg;
       renderPageForm(activePage);
-      // Logo preview
       if (cfg.logo_ext) {
         var img = document.getElementById('logo-preview');
         img.src = '/uploads/logo.' + cfg.logo_ext + '?t=' + Date.now();
         img.style.display = 'block';
         document.getElementById('logo-placeholder').style.display = 'none';
       }
-      // Model
       if (cfg.ai_model && cfg.ai_model !== 'meta-llama/llama-3.1-8b-instruct:free') {
         var customLabel = document.getElementById('model-custom-label');
         var customInput = document.getElementById('model-custom');
@@ -245,7 +257,6 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }).catch(function(){});
 
-    // Guard: only register event listeners once
     if (miSiteInitialized) return;
     miSiteInitialized = true;
 
@@ -282,6 +293,7 @@ document.addEventListener('DOMContentLoaded', function () {
         msg.textContent = data.success ? '✓ Guardado' : (data.error || 'Error');
         msg.style.color = data.success ? 'var(--accent)' : 'var(--error)';
         msg.style.display = 'inline';
+        if (data.success) siteConfig = Object.assign(siteConfig, payload);
         setTimeout(function(){ msg.style.display = 'none'; }, 2500);
       } catch {
         msg.textContent = 'Error de conexión'; msg.style.display = 'inline';
@@ -333,7 +345,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
 
-    // Model search
+    // Model search — calls /api/site/models?q=
     var modelSearch = document.getElementById('model-search');
     var modelResults = document.getElementById('model-search-results');
     var searchTimeout;
@@ -346,12 +358,12 @@ document.addEventListener('DOMContentLoaded', function () {
           var res = await fetch('/api/site/models?q=' + encodeURIComponent(q), { headers: authHeaders() });
           var data = await res.json();
           var models = data.models || [];
-          if (!models.length) { modelResults.style.display = 'none'; return; }
+          if (!models.length) { modelResults.innerHTML = '<div class="model-result-item" style="color:var(--text-muted)">Sin resultados</div>'; modelResults.style.display = 'block'; return; }
           modelResults.innerHTML = models.map(function(m){
-            return '<div class="model-result-item" data-id="' + m.id + '" data-name="' + (m.name||m.id) + '"><span>' + (m.name||m.id) + '</span><span class="mri-id">' + m.id + '</span></div>';
+            return '<div class="model-result-item" data-id="' + m.id + '" data-name="' + (m.name||m.id).replace(/"/g,'') + '"><span>' + (m.name||m.id) + '</span><span class="mri-id">' + m.id + '</span></div>';
           }).join('');
           modelResults.style.display = 'block';
-          modelResults.querySelectorAll('.model-result-item').forEach(function(item){
+          modelResults.querySelectorAll('.model-result-item[data-id]').forEach(function(item){
             item.addEventListener('click', function(){
               var id = item.dataset.id;
               var name = item.dataset.name;
@@ -375,8 +387,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('model-free-label').addEventListener('click', function(){
       document.getElementById('model-free').checked = true;
       document.getElementById('model-free-label').classList.add('selected');
-      var customLabel = document.getElementById('model-custom-label');
-      customLabel.classList.remove('selected');
+      document.getElementById('model-custom-label').classList.remove('selected');
     });
 
     document.addEventListener('click', function(e){

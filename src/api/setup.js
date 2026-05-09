@@ -6,7 +6,10 @@ const router = Router();
 
 router.get('/status', (req, res) => {
   const configured = !!(process.env.PANEL_PASSWORD || getConfig('panel_password'));
-  res.json({ configured });
+  res.json({
+    configured,
+    company_name: getConfig('company_name') || ''
+  });
 });
 
 router.post('/complete', (req, res) => {
