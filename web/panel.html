@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Panel de cliente">
+  <title>Mi panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&display=swap">
+  <link rel="stylesheet" href="/style-panel.css">
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="login-screen visible">
+  <div class="login-card">
+    <div class="login-header">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" width="40" height="40" class="login-logo">
+        <line x1="16" y1="14" x2="19" y2="50" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>
+        <line x1="48" y1="14" x2="45" y2="50" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>
+        <circle cx="28" cy="32" r="3.5" fill="currentColor"/>
+        <circle cx="36" cy="32" r="3.5" fill="currentColor"/>
+      </svg>
+      <h1 class="login-title">Panel de cliente</h1>
+      <p class="login-subtitle">Introduce tu contraseña para acceder</p>
+    </div>
+    <form id="login-form" class="login-form">
+      <div class="form-group">
+        <input type="password" id="panel-password" placeholder="Contraseña" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn-primary login-button">Entrar</button>
+      <p id="login-error" class="login-error" hidden></p>
+    </form>
+  </div>
+</div>
+
+<!-- PANEL APP -->
+<div id="panel-app" class="panel-app" hidden>
+
+  <!-- TOPBAR -->
+  <header id="panel-topbar" class="panel-topbar">
+    <div class="panel-topbar__inner">
+      <div class="panel-topbar__left">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" width="24" height="24" class="panel-logo">
+          <line x1="16" y1="14" x2="19" y2="50" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>
+          <line x1="48" y1="14" x2="45" y2="50" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>
+          <circle cx="28" cy="32" r="3.5" fill="currentColor"/>
+          <circle cx="36" cy="32" r="3.5" fill="currentColor"/>
+        </svg>
+        <span class="panel-topbar__company" id="company-name">Tu Empresa</span>
+      </div>
+      <div class="panel-topbar__right">
+        <span class="panel-badge">Cliente</span>
+        <button id="panel-logout" class="btn-ghost-sm" title="Cerrar sesión">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- LAYOUT -->
+  <div class="panel-layout">
+
+    <!-- SIDEBAR -->
+    <nav id="panel-sidebar" class="panel-sidebar">
+      <div class="sidebar-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" width="32" height="32">
+          <line x1="16" y1="14" x2="19" y2="50" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>
+          <line x1="48" y1="14" x2="45" y2="50" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>
+          <circle cx="28" cy="32" r="3.5" fill="currentColor"/>
+          <circle cx="36" cy="32" r="3.5" fill="currentColor"/>
+        </svg>
+        <span class="sidebar-company" id="sidebar-company">Tu Empresa</span>
+      </div>
+
+      <ul class="sidebar-nav">
+        <li>
+          <button class="sidebar-nav-item active" data-section="overview">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+            <span>Inicio</span>
+          </button>
+        </li>
+        <li>
+          <button class="sidebar-nav-item" data-section="chat">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span>Agente</span>
+          </button>
+        </li>
+        <li>
+          <button class="sidebar-nav-item" data-section="blog">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6.5a2.5 2.5 0 0 0-2.5 2.5"/></svg>
+            <span>Blog</span>
+          </button>
+        </li>
+        <li>
+          <button class="sidebar-nav-item" data-section="textos">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="19" x2="12" y2="13"/><line x1="9" y1="16" x2="15" y2="16"/></svg>
+            <span>Textos web</span>
+          </button>
+        </li>
+        <li>
+          <button class="sidebar-nav-item" data-section="servicio">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <span>Mi servicio</span>
+          </button>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <button id="sidebar-logout" class="sidebar-logout-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 3l7 7-7 7M9 12h13"/></svg>
+          <span>Cerrar sesión</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- CONTENT -->
+    <main id="panel-content" class="panel-content">
+
+      <!-- OVERVIEW -->
+      <section data-panel="overview" class="panel-section active">
+        <div class="section-header">
+          <h2 id="greeting">Buenos días</h2>
+          <p>¿Qué quieres hacer hoy?</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-number" id="stat-posts">—</div>
+            <div class="stat-label">Artículos publicados</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="stat-service">✓</div>
+            <div class="stat-label">Servicio activo</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">IA</div>
+            <div class="stat-label">Agente disponible</div>
+          </div>
+        </div>
+
+        <div class="quick-actions">
+          <h3>Acciones rápidas</h3>
+          <div class="action-card">
+            <h4>📝 Crear un nuevo artículo</h4>
+            <p>El agente te ayudará a escribir tu próximo artículo para el blog.</p>
+            <button class="btn-primary-sm action-button" data-action="create-article">Crear artículo</button>
+          </div>
+          <div class="action-card">
+            <h4>✏️ Editar un texto</h4>
+            <p>Mejora los textos de tu web con ayuda del agente de marketing.</p>
+            <button class="btn-primary-sm action-button" data-action="edit-texts">Editar textos</button>
+          </div>
+          <div class="action-card">
+            <h4>📖 Ver mis artículos</h4>
+            <p>Revisa todos los artículos que has publicado en tu blog.</p>
+            <button class="btn-primary-sm action-button" data-action="view-blog">Ver blog</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- CHAT CON AGENTE -->
+      <section data-panel="chat" class="panel-section" hidden>
+        <div class="section-header">
+          <h2>Agente de marketing</h2>
+          <span class="status-badge">Online</span>
+          <p>Crea artículos, edita textos y mejora tu presencia online.</p>
+        </div>
+
+        <div class="chat-area">
+          <div id="chat-messages" class="chat-messages">
+            <div class="chat-message agent-message">
+              <p>¡Hola! Soy tu agente de marketing. Estoy aquí para ayudarte a crear contenido y mejorar tu presencia online. ¿Qué necesitas hoy?</p>
+            </div>
+          </div>
+
+          <div class="chat-suggestions">
+            <p class="suggestions-label">Sugerencias rápidas:</p>
+            <div class="suggestion-chips">
+              <button class="suggestion-chip" data-prompt="Quiero crear un nuevo artículo para el blog">Crear un artículo</button>
+              <button class="suggestion-chip" data-prompt="Mejora el texto principal de mi página de inicio">Mejorar textos web</button>
+              <button class="suggestion-chip" data-prompt="¿Qué temas debería cubrir en mi blog?">Ideas de contenido</button>
+            </div>
+          </div>
+
+          <div class="chat-input-area">
+            <textarea id="chat-input" placeholder="Escribe tu mensaje..." rows="3"></textarea>
+            <button id="chat-send" class="btn-primary-sm chat-send-btn">Enviar</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- BLOG -->
+      <section data-panel="blog" class="panel-section" hidden>
+        <div class="section-header">
+          <div class="section-title">
+            <h2>Blog</h2>
+            <button class="btn-primary-sm" id="new-article-btn">Nuevo artículo</button>
+          </div>
+        </div>
+        <!-- panel.js inyecta los artículos aquí desde /api/blog -->
+        <div id="articles-list"></div>
+      </section>
+
+      <!-- TEXTOS WEB -->
+      <section data-panel="textos" class="panel-section" hidden>
+        <div class="section-header">
+          <h2>Textos de tu web</h2>
+          <p>Aquí puedes ver los textos actuales de tu web. Para modificarlos, usa el agente de marketing.</p>
+        </div>
+
+        <div class="textos-grid">
+          <div class="texto-card">
+            <div class="texto-section">HÉROE</div>
+            <h3>Presencia digital que trabaja mientras duermes.</h3>
+            <p class="texto-content">Diseño, desarrollo y sistemas. Para empresas que quieren moverse rápido sin romper nada.</p>
+            <button class="btn-ghost-sm texto-action" data-text="hero">Pedir al agente que lo mejore</button>
+          </div>
+          <div class="texto-card">
+            <div class="texto-section">SERVICIOS</div>
+            <h3>Presencia Web</h3>
+            <p class="texto-content">Sitios, tiendas y productos digitales construidos para convertir.</p>
+            <button class="btn-ghost-sm texto-action" data-text="service-1">Mejorar este texto</button>
+          </div>
+          <div class="texto-card">
+            <div class="texto-section">SERVICIOS</div>
+            <h3>Sistemas y Automatización</h3>
+            <p class="texto-content">APIs, integraciones y flujos que eliminan el trabajo manual.</p>
+            <button class="btn-ghost-sm texto-action" data-text="service-2">Mejorar este texto</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- MI SERVICIO -->
+      <section data-panel="servicio" class="panel-section" hidden>
+        <div class="section-header">
+          <h2>Mi servicio</h2>
+        </div>
+
+        <div class="servicio-cards">
+          <div class="servicio-card featured">
+            <h3>Presencia Online</h3>
+            <div class="servicio-features">
+              <p class="feature">✓ Web profesional</p>
+              <p class="feature">✓ Agente de marketing IA</p>
+              <p class="feature">✓ Blog con artículos</p>
+              <p class="feature">✓ Soporte incluido</p>
+            </div>
+            <p class="servicio-period">Plan mensual</p>
+          </div>
+
+          <div class="servicio-card">
+            <h3>Estado del servicio</h3>
+            <div class="status-items">
+              <div class="status-item"><span class="status-dot active"></span><span>Web: Activa</span></div>
+              <div class="status-item"><span class="status-dot active"></span><span>Agente: Disponible</span></div>
+              <div class="status-item"><span class="status-dot active"></span><span>Blog: Funcionando</span></div>
+            </div>
+          </div>
+
+          <div class="servicio-card">
+            <h3>Contacto</h3>
+            <p>¿Necesitas ayuda técnica o tienes dudas sobre tu plan?</p>
+            <p class="contact-email"><strong>Email:</strong><br><a href="mailto:hola@biglobster.top">hola@biglobster.top</a></p>
+            <p class="contact-note">Te responderemos en menos de 24 horas.</p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="/panel.js" defer></script>
+
+</body>
+</html>
