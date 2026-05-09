@@ -1,0 +1,4 @@
+{
+  "build_command": "npm ci --only=production",
+  "start_command": "node src/server.js"
+}
