@@ -434,6 +434,25 @@ document.addEventListener("DOMContentLoaded", function () {
       .then(function (cfg) {
         siteConfig = cfg;
         renderPageForm(activePage);
+
+        var notifyEmailInput = document.getElementById("notify-email-input");
+        var smtpHostInput = document.getElementById("smtp-host-input");
+        var smtpPortInput = document.getElementById("smtp-port-input");
+        var smtpUserInput = document.getElementById("smtp-user-input");
+
+        if (notifyEmailInput) {
+          notifyEmailInput.value = cfg.notify_email || "";
+        }
+        if (smtpHostInput) {
+          smtpHostInput.value = cfg.smtp_host || "";
+        }
+        if (smtpPortInput) {
+          smtpPortInput.value = cfg.smtp_port || "";
+        }
+        if (smtpUserInput) {
+          smtpUserInput.value = cfg.smtp_user || "";
+        }
+
         if (cfg.logo_ext) {
           var img = document.getElementById("logo-preview");
           img.src = "/uploads/logo." + cfg.logo_ext + "?t=" + Date.now();
@@ -582,6 +601,42 @@ document.addEventListener("DOMContentLoaded", function () {
           }, 2500);
         } catch {
           msg.textContent = "Error";
+          msg.style.display = "inline";
+        }
+      });
+
+    // Email notifications settings
+    document
+      .getElementById("save-email-settings")
+      .addEventListener("click", async function () {
+        var msg = document.getElementById("save-email-msg");
+        var payload = {
+          notify_email: document.getElementById("notify-email-input").value.trim(),
+          smtp_host: document.getElementById("smtp-host-input").value.trim(),
+          smtp_port: document.getElementById("smtp-port-input").value.trim(),
+          smtp_user: document.getElementById("smtp-user-input").value.trim(),
+          smtp_pass: document.getElementById("smtp-pass-input").value,
+        };
+
+        try {
+          var res = await fetch("/api/site/texts", {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify(payload),
+          });
+          var data = await res.json();
+          msg.textContent = data.success ? "✓ Guardado" : data.error || "Error";
+          msg.style.color = data.success ? "var(--accent)" : "var(--error)";
+          msg.style.display = "inline";
+          if (data.success) {
+            siteConfig = Object.assign(siteConfig, payload);
+          }
+          setTimeout(function () {
+            msg.style.display = "none";
+          }, 2500);
+        } catch {
+          msg.textContent = "Error de conexión";
+          msg.style.color = "var(--error)";
           msg.style.display = "inline";
         }
       });

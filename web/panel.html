@@ -574,6 +574,9 @@
               <button class="misite-tab active" data-tab="logo">Logo</button>
               <button class="misite-tab" data-tab="paginas">Páginas</button>
               <button class="misite-tab" data-tab="agente">Modelo IA</button>
+              <button class="misite-tab" data-tab="notificaciones">
+                Notificaciones
+              </button>
             </div>
 
             <!-- TAB: LOGO -->
@@ -707,8 +710,8 @@
                       <span class="model-badge free">Gratis</span>
                     </div>
                     <span class="model-desc"
-                      >gpt-oss-20b:free · Recomendado para
-                      la mayoría de tareas.</span
+                      >gpt-oss-20b:free · Recomendado para la mayoría de
+                      tareas.</span
                     >
                   </label>
                 </div>
@@ -767,6 +770,77 @@
                   </button>
                   <span
                     id="save-model-msg"
+                    style="font-size: 0.8125rem; display: none"
+                  ></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB: NOTIFICACIONES -->
+            <div
+              class="misite-panel"
+              id="misite-notificaciones"
+              style="display: none"
+            >
+              <div class="misite-block">
+                <h3>Notificaciones por email</h3>
+                <p class="misite-hint">
+                  Configura SMTP para recibir por email los mensajes del
+                  formulario de contacto.
+                </p>
+
+                <div class="misite-page-form" style="max-width: 560px">
+                  <div>
+                    <label for="notify-email-input">Email de notificación</label>
+                    <input
+                      type="email"
+                      id="notify-email-input"
+                      placeholder="email@dominio.com"
+                    />
+                  </div>
+                  <div>
+                    <label for="smtp-host-input">Servidor SMTP</label>
+                    <input
+                      type="text"
+                      id="smtp-host-input"
+                      placeholder="smtp.gmail.com"
+                    />
+                  </div>
+                  <div>
+                    <label for="smtp-port-input">Puerto SMTP</label>
+                    <input type="number" id="smtp-port-input" placeholder="587" />
+                  </div>
+                  <div>
+                    <label for="smtp-user-input">Usuario SMTP</label>
+                    <input
+                      type="text"
+                      id="smtp-user-input"
+                      placeholder="tu@email.com"
+                    />
+                  </div>
+                  <div>
+                    <label for="smtp-pass-input">Contraseña SMTP</label>
+                    <input
+                      type="password"
+                      id="smtp-pass-input"
+                      placeholder="••••••••"
+                    />
+                  </div>
+                </div>
+
+                <div
+                  style="
+                    margin-top: 1.5rem;
+                    display: flex;
+                    gap: 1rem;
+                    align-items: center;
+                  "
+                >
+                  <button class="btn-primary-sm" id="save-email-settings">
+                    Guardar configuración de email
+                  </button>
+                  <span
+                    id="save-email-msg"
                     style="font-size: 0.8125rem; display: none"
                   ></span>
                 </div>

@@ -104,14 +104,75 @@ function footerHTML(cfg) {
   );
 }
 
+function updateHead(page, cfg, options) {
+  var titles = {
+    index: cfg.page_index_title || cfg.company_name || "Inicio",
+    quienes: cfg.page_quienes_title || "Quiénes somos",
+    servicios: cfg.page_servicios_title || "Servicios",
+    contacto: cfg.page_contacto_title || "Contacto",
+    blog: cfg.page_blog_title || "Blog",
+  };
+  var descs = {
+    index: cfg.page_index_desc || cfg.page_index_subtitle || "",
+    quienes: cfg.page_quienes_desc || cfg.page_quienes_subtitle || "",
+    servicios: cfg.page_servicios_desc || cfg.page_servicios_subtitle || "",
+    contacto: cfg.page_contacto_desc || cfg.page_contacto_subtitle || "",
+    blog: cfg.page_blog_subtitle || "",
+  };
+
+  var company = cfg.company_name || "";
+  var titleValue = options?.title || titles[page] || company;
+  var desc = options?.description || descs[page] || "";
+  var title = titleValue
+    ? company
+      ? titleValue + " | " + company
+      : titleValue
+    : company;
+
+  document.title = title;
+
+  var metaDesc = document.querySelector('meta[name="description"]');
+  if (!metaDesc) {
+    metaDesc = document.createElement("meta");
+    metaDesc.name = "description";
+    document.head.appendChild(metaDesc);
+  }
+  metaDesc.content = desc;
+
+  var ogTitle = document.querySelector('meta[property="og:title"]');
+  if (!ogTitle) {
+    ogTitle = document.createElement("meta");
+    ogTitle.setAttribute("property", "og:title");
+    document.head.appendChild(ogTitle);
+  }
+  ogTitle.content = title;
+
+  var ogDesc = document.querySelector('meta[property="og:description"]');
+  if (!ogDesc) {
+    ogDesc = document.createElement("meta");
+    ogDesc.setAttribute("property", "og:description");
+    document.head.appendChild(ogDesc);
+  }
+  ogDesc.content = desc;
+
+  var ogType = document.querySelector('meta[property="og:type"]');
+  if (!ogType) {
+    ogType = document.createElement("meta");
+    ogType.setAttribute("property", "og:type");
+    document.head.appendChild(ogType);
+  }
+  ogType.content = "website";
+}
+
 window.renderPage = function (page) {
   getConfig(function (cfg) {
+    updateHead(page, cfg);
+
     var root = document.getElementById("site-root");
     var html = navHTML(page, cfg);
     var content = "";
 
     if (page === "index") {
-      document.title = cfg.company_name || "Inicio";
       if (!cfg.page_index_title) {
         content = constructionHTML();
       } else {
@@ -130,9 +191,6 @@ window.renderPage = function (page) {
           '<div class="site-hero-actions"><a href="/servicios" class="site-btn">Ver servicios</a><a href="/contacto" class="site-btn-ghost">Contactar</a></div></div></main>';
       }
     } else if (page === "quienes") {
-      document.title =
-        (cfg.page_quienes_title || "Quiénes somos") +
-        (cfg.company_name ? " — " + cfg.company_name : "");
       if (!cfg.page_quienes_title) {
         content = constructionHTML();
       } else {
@@ -151,9 +209,6 @@ window.renderPage = function (page) {
           "</div></main>";
       }
     } else if (page === "servicios") {
-      document.title =
-        (cfg.page_servicios_title || "Servicios") +
-        (cfg.company_name ? " — " + cfg.company_name : "");
       if (!cfg.page_servicios_title) {
         content = constructionHTML();
       } else {
@@ -174,14 +229,8 @@ window.renderPage = function (page) {
           "</div></main>";
       }
     } else if (page === "contacto") {
-      document.title =
-        (cfg.page_contacto_title || "Contacto") +
-        (cfg.company_name ? " — " + cfg.company_name : "");
       content = contactHTML(cfg);
     } else if (page === "blog") {
-      document.title =
-        (cfg.page_blog_title || "Blog") +
-        (cfg.company_name ? " — " + cfg.company_name : "");
       content =
         '<main class="site-page"><div class="site-page-inner"><h1>' +
         (cfg.page_blog_title || "Blog") +
@@ -306,8 +355,10 @@ window.renderBlogPost = function () {
     })
     .then(function (post) {
       getConfig(function (cfg) {
-        document.title =
-          post.title + (cfg.company_name ? " — " + cfg.company_name : "");
+        updateHead("blog", cfg, {
+          title: post.title,
+          description: post.excerpt || "",
+        });
         var root = document.getElementById("site-root");
         var html = navHTML("blog", cfg);
         html +=
@@ -329,6 +380,10 @@ window.renderBlogPost = function () {
     })
     .catch(function () {
       getConfig(function (cfg) {
+        updateHead("blog", cfg, {
+          title: "Artículo no encontrado",
+          description: "",
+        });
         var root = document.getElementById("site-root");
         root.innerHTML =
           navHTML("blog", cfg) +

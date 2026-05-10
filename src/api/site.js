@@ -72,6 +72,11 @@ router.post("/texts", requireAuth, (req, res) => {
     "page_contacto_desc",
     "page_blog_title",
     "page_blog_subtitle",
+    "smtp_host",
+    "smtp_port",
+    "smtp_user",
+    "smtp_pass",
+    "notify_email",
     "ai_model",
   ];
   for (const key of allowed) {
