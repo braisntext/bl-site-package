@@ -611,7 +611,9 @@ document.addEventListener("DOMContentLoaded", function () {
       .addEventListener("click", async function () {
         var msg = document.getElementById("save-email-msg");
         var payload = {
-          notify_email: document.getElementById("notify-email-input").value.trim(),
+          notify_email: document
+            .getElementById("notify-email-input")
+            .value.trim(),
           smtp_host: document.getElementById("smtp-host-input").value.trim(),
           smtp_port: document.getElementById("smtp-port-input").value.trim(),
           smtp_user: document.getElementById("smtp-user-input").value.trim(),
