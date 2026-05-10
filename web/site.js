@@ -56,7 +56,7 @@ function navHTML(active, cfg) {
     logoHTML(cfg) +
     "<span>" +
     company +
-    '</span></a><div class="site-nav-links">' +
+    '</span></a><button class="site-nav-toggle" aria-label="Menú" onclick="this.closest(\'nav\').querySelector(\'.site-nav-links\').classList.toggle(\'open\')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button><div class="site-nav-links">' +
     linksHTML +
     "</div></div></nav>"
   );

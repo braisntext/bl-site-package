@@ -952,3 +952,64 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted, #888);
 }
+
+@media (max-width: 768px) {
+  .panel-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+  .panel-sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding: 0.75rem;
+    overflow-x: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border, #ddd);
+  }
+  .sidebar-nav-item {
+    flex: 0 0 auto;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+  }
+  .sidebar-brand,
+  .sidebar-logo,
+  .sidebar-company,
+  .sidebar-footer {
+    display: none;
+  }
+  .panel-main,
+  .panel-content {
+    padding: 1rem;
+  }
+  .panel-topbar {
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .article-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .article-row-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .login-card {
+    padding: 2rem 1.25rem;
+    margin: 1rem;
+  }
+  .misite-tabs {
+    flex-wrap: wrap;
+  }
+  .misite-tab {
+    flex: 1 1 auto;
+    text-align: center;
+    font-size: 0.85rem;
+  }
+}
