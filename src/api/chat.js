@@ -56,49 +56,80 @@ function createUniqueArticleSlug(title) {
 }
 
 function applyUpdateTextsAction(data) {
-  if (!data || typeof data !== "object") return null;
+  if (!data || typeof data !== "object") {
+    return {
+      actionResult: { type: "texts_updated", keys: [], rejected: [] },
+      feedback:
+        "\n\n⚠️ No reconocí las secciones que intenté modificar. Dime exactamente qué página quieres cambiar (Inicio, Quiénes somos, Servicios, Contacto o Blog).",
+    };
+  }
 
   const updatedKeys = [];
+  const rejectedKeys = [];
   for (const [key, value] of Object.entries(data)) {
     if (!ALLOWED_TEXT_KEYS.has(key) || value === undefined || value === null) {
+      rejectedKeys.push(key);
       continue;
     }
     setConfig(key, String(value));
     updatedKeys.push(key);
   }
 
-  return updatedKeys.length ? { type: "texts_updated", keys: updatedKeys } : null;
+  let feedback = "";
+  if (!updatedKeys.length) {
+    feedback =
+      "\n\n⚠️ No reconocí las secciones que intenté modificar. Dime exactamente qué página quieres cambiar (Inicio, Quiénes somos, Servicios, Contacto o Blog).";
+  } else if (rejectedKeys.length) {
+    feedback =
+      "\n\n✓ Actualicé: " +
+      updatedKeys.join(", ") +
+      ". No reconocí: " +
+      rejectedKeys.join(", ") +
+      ".";
+  }
+
+  return {
+    actionResult: {
+      type: "texts_updated",
+      keys: updatedKeys,
+      rejected: rejectedKeys,
+    },
+    feedback,
+  };
 }
 
 function applyCreateArticleAction(data) {
-  if (!data || typeof data !== "object") return null;
+  if (!data || typeof data !== "object") return { actionResult: null, feedback: "" };
 
   const title = typeof data.title === "string" ? data.title.trim() : "";
   const content = typeof data.content === "string" ? data.content.trim() : "";
   const excerpt = typeof data.excerpt === "string" ? data.excerpt.trim() : "";
   const status = data.status === "published" ? "published" : "draft";
 
-  if (!title || !content) return null;
+  if (!title || !content) return { actionResult: null, feedback: "" };
 
   const slug = createUniqueArticleSlug(title);
   db.prepare(
     "INSERT INTO articles (title, slug, content, excerpt, status) VALUES (?, ?, ?, ?, ?)",
   ).run(title, slug, content, excerpt, status);
 
-  return { type: "article_created" };
+  return { actionResult: { type: "article_created" }, feedback: "" };
 }
 
 function resolveActionResult(action) {
-  if (!action || typeof action !== "object") return null;
-  if (action.type === "update_texts") return applyUpdateTextsAction(action.data);
-  if (action.type === "create_article") return applyCreateArticleAction(action.data);
-  return null;
+  if (!action || typeof action !== "object") return { actionResult: null, feedback: "" };
+  if (action.type === "update_texts")
+    return applyUpdateTextsAction(action.data);
+  if (action.type === "create_article")
+    return applyCreateArticleAction(action.data);
+  return { actionResult: null, feedback: "" };
 }
 
 function applyAgentAction(reply) {
   const actionMatch = reply.match(/<ACTION>([\s\S]*?)<\/ACTION>/);
   let cleanReply = reply.replace(/<ACTION>[\s\S]*?<\/ACTION>/, "").trim();
   let actionResult = null;
+  let feedback = "";
 
   if (!actionMatch) {
     return { reply: cleanReply || reply.trim(), actionResult };
@@ -106,8 +137,17 @@ function applyAgentAction(reply) {
 
   try {
     const action = JSON.parse(actionMatch[1]);
-    actionResult = resolveActionResult(action);
-  } catch {}
+    const resolved = resolveActionResult(action);
+    actionResult = resolved.actionResult;
+    feedback = resolved.feedback || "";
+  } catch {
+    feedback =
+      "\n\n⚠️ Intenté aplicar cambios al sitio pero la respuesta no tenía el formato correcto. Puedes pedirme que lo intente de nuevo.";
+  }
+
+  if (feedback) {
+    cleanReply = (cleanReply || reply.trim()) + feedback;
+  }
 
   return { reply: cleanReply || reply.trim(), actionResult };
 }
@@ -133,10 +173,10 @@ async function requestChatCompletion({
         messages: [
           {
             role: "system",
-            content: `Eres el agente de marketing de ${companyName}, empresa del sector ${sector}. 
+            content: `Eres el agente de marketing de ${companyName}, empresa del sector ${sector}.
 Tu especialidad es crear contenido de marketing: artículos de blog, textos para páginas web y copies persuasivos.
 
-Tienes acceso directo al sitio web del cliente. Cuando el cliente te pida modificar textos de alguna página, DEBES responder con un JSON de acción además del texto. 
+Tienes acceso directo al sitio web del cliente. Cuando el cliente te pida modificar textos de alguna página, DEBES responder con un JSON de acción además del texto.
 
 Si el cliente pide cambiar textos de una página, responde SIEMPRE con este formato exacto al final de tu mensaje:
 <ACTION>{"type":"update_texts","data":{"key":"valor","key2":"valor2"}}</ACTION>

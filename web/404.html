@@ -4,19 +4,59 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Página no encontrada</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="/style.css">
   <style>
-    body { min-height:100dvh; display:flex; align-items:center; justify-content:center; font-family:system-ui,sans-serif; background:#0f0e0c; color:#cdccca; text-align:center; padding:2rem; }
-    h1 { font-size:4rem; font-weight:700; color:#393836; margin-bottom:0.5rem; }
-    p { color:#797876; margin-bottom:2rem; }
-    a { color:#4f98a3; text-decoration:none; }
-    a:hover { text-decoration:underline; }
+    .site-404 {
+      min-height: calc(100dvh - 18rem);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 4rem 1.5rem;
+    }
+    .site-404-inner {
+      max-width: 64rem;
+      display: grid;
+      gap: 1.2rem;
+      justify-items: center;
+    }
+    .site-404-code {
+      font-size: clamp(6.4rem, 12vw, 14rem);
+      line-height: 1;
+      letter-spacing: -0.05em;
+      color: var(--accent, #b8391c);
+      margin: 0;
+    }
+    .site-404-title {
+      margin: 0;
+      font-size: clamp(2.2rem, 4vw, 3.4rem);
+      color: var(--text-primary, #1f2328);
+    }
   </style>
 </head>
 <body>
-  <div>
-    <h1>404</h1>
-    <p>Página no encontrada</p>
-    <a href="/">← Volver al inicio</a>
-  </div>
+  <div id="site-root"></div>
+  <script src="/site.js"></script>
+  <script>
+    getConfig(function(cfg) {
+      var root = document.getElementById('site-root');
+      document.title = 'Página no encontrada' + (cfg.company_name ? ' — ' + cfg.company_name : '');
+
+      var html = navHTML('', cfg);
+      html +=
+        '<main class="site-404">' +
+          '<section class="site-404-inner">' +
+            '<p class="site-404-code">404</p>' +
+            '<h1 class="site-404-title">Página no encontrada</h1>' +
+            '<a href="/" class="site-btn">Volver al inicio</a>' +
+          '</section>' +
+        '</main>';
+      html += footerHTML(cfg);
+
+      root.innerHTML = html;
+    });
+  </script>
 </body>
 </html>
