@@ -99,7 +99,8 @@ function applyUpdateTextsAction(data) {
 }
 
 function applyCreateArticleAction(data) {
-  if (!data || typeof data !== "object") return { actionResult: null, feedback: "" };
+  if (!data || typeof data !== "object")
+    return { actionResult: null, feedback: "" };
 
   const title = typeof data.title === "string" ? data.title.trim() : "";
   const content = typeof data.content === "string" ? data.content.trim() : "";
@@ -117,7 +118,8 @@ function applyCreateArticleAction(data) {
 }
 
 function resolveActionResult(action) {
-  if (!action || typeof action !== "object") return { actionResult: null, feedback: "" };
+  if (!action || typeof action !== "object")
+    return { actionResult: null, feedback: "" };
   if (action.type === "update_texts")
     return applyUpdateTextsAction(action.data);
   if (action.type === "create_article")

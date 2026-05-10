@@ -32,16 +32,16 @@ El agente usa por defecto `gpt-oss-20b:free`, un modelo gratuito de OpenRouter q
 
 ## Variables de entorno
 
-| Variable              | Descripción                                                 | Default                                 |
-| --------------------- | ----------------------------------------------------------- | --------------------------------------- |
-| `PORT`                | Puerto del servidor                                         | `3000`                                  |
-| `PANEL_PASSWORD`      | Contraseña del panel, opcional si se guarda desde el wizard | vacío                                   |
-| `JWT_SECRET`          | Secret JWT, opcional si se genera desde el wizard           | vacío                                   |
-| `OPENROUTER_API_KEY`  | API key de OpenRouter                                       | vacío                                   |
+| Variable              | Descripción                                                 | Default            |
+| --------------------- | ----------------------------------------------------------- | ------------------ |
+| `PORT`                | Puerto del servidor                                         | `3000`             |
+| `PANEL_PASSWORD`      | Contraseña del panel, opcional si se guarda desde el wizard | vacío              |
+| `JWT_SECRET`          | Secret JWT, opcional si se genera desde el wizard           | vacío              |
+| `OPENROUTER_API_KEY`  | API key de OpenRouter                                       | vacío              |
 | `CONTENT_AGENT_MODEL` | Modelo OpenRouter para el agente de contenidos              | `gpt-oss-20b:free` |
-| `CLIENT_COMPANY_NAME` | Nombre de la empresa                                        | vacío                                   |
-| `CLIENT_SECTOR`       | Sector de la empresa                                        | vacío                                   |
-| `DB_PATH`             | Ruta a la base de datos SQLite                              | `./data/app.db`                         |
+| `CLIENT_COMPANY_NAME` | Nombre de la empresa                                        | vacío              |
+| `CLIENT_SECTOR`       | Sector de la empresa                                        | vacío              |
+| `DB_PATH`             | Ruta a la base de datos SQLite                              | `./data/app.db`    |
 
 Si estas variables están vacías, el asistente de inicio en `/setup` guarda la configuración en SQLite.
 
