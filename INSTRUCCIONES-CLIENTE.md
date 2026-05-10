@@ -39,6 +39,23 @@ Gestiona los artículos de tu web:
 - **Publicar / Despublicar** — controla qué artículos ven tus visitantes
 - **Eliminar** — borra artículos que ya no necesites
 
+## Configuración de notificaciones por email
+
+Para recibir un aviso cada vez que alguien te envíe un mensaje desde tu web:
+
+1. Entra en el panel → **Mi sitio web** → pestaña **Notificaciones**
+2. Rellena los campos:
+   - **Email de notificación**: donde quieres recibir los avisos
+   - **Servidor SMTP**: el servidor de tu proveedor de email (ej: `smtp.gmail.com`)
+   - **Puerto**: `587` para la mayoría de proveedores
+   - **Usuario**: tu dirección de email completa
+   - **Contraseña**: la contraseña de tu email (en Gmail, usa una "contraseña de aplicación")
+3. Haz click en **Guardar configuración de email**
+
+> **Nota para Gmail:** Google requiere una contraseña de aplicación específica.
+> Ve a myaccount.google.com → Seguridad → Verificación en 2 pasos → Contraseñas de aplicación.
+> Genera una nueva y úsala en el campo Contraseña.
+
 ### Agente de marketing
 El agente de inteligencia artificial puede ayudarte a:
 - **Crear artículos de blog** — dile el tema y lo escribe por ti (quedará como borrador para que lo revises)
@@ -61,13 +78,14 @@ Aquí aparecen todos los mensajes que tus visitantes envían a través del formu
 
 ## Conectar tu dominio propio
 
-Si quieres usar tu propio dominio (por ejemplo, tuempresa.com):
+Si tienes un dominio (por ejemplo, tuempresa.com) y quieres usarlo para tu web:
 
-1. Entra en el panel de Zeabur → tu servicio → pestaña **Networking**
-2. Haz click en **Add Domain** e introduce tu dominio
-3. En tu proveedor de dominio (GoDaddy, Namecheap, etc.) añade el registro DNS que te indica Zeabur
-4. Espera entre 5 y 60 minutos para que el DNS se propague
-5. El certificado HTTPS se activa automáticamente — no requiere ninguna acción adicional
+1. Dile a tu proveedor de servicio el dominio que quieres usar
+2. Tu proveedor configurará la conexión en el servidor
+3. En tu proveedor de dominio (donde lo compraste), añade el registro DNS que te indique tu proveedor
+4. En 5-60 minutos tu web estará disponible en tu dominio con HTTPS activado automáticamente
+
+Si no tienes dominio propio, tu web seguirá funcionando en la dirección que te proporcionó tu proveedor.
 
 ---
 
