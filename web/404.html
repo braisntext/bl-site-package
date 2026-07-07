@@ -58,9 +58,12 @@
           '<a href="/" class="site-btn">Volver al inicio</a>' +
           "</section>" +
           "</main>";
-        html += footerHTML(cfg);
+        html += footerHTML(cfg) + whatsappHTML(cfg);
 
         root.innerHTML = html;
+        initTheme();
+        initCookieConsent();
+        initReveals();
       });
     </script>
   </body>
