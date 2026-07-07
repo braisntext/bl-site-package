@@ -7,6 +7,7 @@ Este documento es para el equipo de BigLobster. No compartir con el cliente.
 ## Antes de la reunión de venta
 
 - [ ] Enviar formulario de recogida de datos al cliente (ver FORMULARIO-CLIENTE.md)
+- [ ] Confirmar plan de web, nivel de inteligencia y agentes adicionales elegidos (del formulario, o de su selección en biglobster.top/agentes-en-alquiler.html si vino por ahí)
 - [ ] Confirmar si tienen dominio propio o necesitan uno
 - [ ] Confirmar email donde quieren recibir los mensajes de contacto
 - [ ] Confirmar que tienen logo en PNG o SVG (fondo transparente)
@@ -16,39 +17,48 @@ Este documento es para el equipo de BigLobster. No compartir con el cliente.
 ## Setup técnico (20 minutos)
 
 ### 1. Crear proyecto en Zeabur
+
 - [ ] Entrar en zeabur.com → New Project
 - [ ] Nombre del proyecto: `bl-[nombre-empresa]` (ej: `bl-fontaneria-garcia`)
 - [ ] Add Service → Git → seleccionar `braisntext/bl-site-package`
 - [ ] Esperar a que el build termine
 
 ### 2. Configurar variables de entorno
+
 En Zeabur → tu servicio → Variables:
+
 - [ ] `PANEL_PASSWORD` → contraseña acordada con el cliente
 - [ ] `JWT_SECRET` → string aleatorio de 32+ caracteres (usa: `openssl rand -hex 32`)
-- [ ] `OPENROUTER_API_KEY` → la API key de OpenRouter de BigLobster
 - [ ] `PORT` → `8080`
+- [ ] **NO** configures `OPENROUTER_API_KEY` aquí — el código la prioriza sobre la que el cliente introduce en `/setup`, así que si se pone aquí la del cliente queda ignorada en silencio. La API Key es BYOK: la introduce el cliente (o tú, temporalmente, ver paso 4).
 
 ### 3. Configurar volumen persistente
+
 - [ ] Zeabur → tu servicio → Volumes → Add Volume
 - [ ] Nombre: `bl-data`
 - [ ] Mount path: `/app/data`
 - [ ] Guardar y esperar redeploy
 
 ### 4. Primer acceso y configuración
+
 - [ ] Abrir `https://[url-zeabur]/setup`
 - [ ] Paso 1: nombre de empresa y sector
-- [ ] Paso 2: introducir OPENROUTER_API_KEY
+- [ ] Paso 2: introducir OPENROUTER_API_KEY — si el cliente ya te la compartió, úsala directamente. Si no, usa temporalmente una key de BigLobster desde el panel (**Mi sitio web → Modelo IA**) solo para poder redactar el contenido inicial, y sustitúyela por la del cliente antes de la entrega (ver checklist de entrega)
 - [ ] Paso 3: confirmar contraseña del panel
 - [ ] Acceder a `https://[url-zeabur]/panel`
 
 ### 5. Personalización inicial
+
 - [ ] Mi sitio web → Logo → subir logo del cliente
 - [ ] Mi sitio web → Páginas → rellenar textos de las 5 páginas (o usar el agente)
 - [ ] Mi sitio web → Notificaciones → configurar email del cliente
 - [ ] Blog → crear 2-3 artículos iniciales con el agente
 - [ ] Verificar que la web pública muestra el contenido correctamente
 
+**Si el cliente contrató agentes adicionales** (Content Gap Hunter, SEO/GEO On-Site, Infographic Engineer, Off-Site GEO Scout): estos **no tienen aprovisionamiento automático todavía** — no hay nada que activar aquí. Hoy el alta es manual vía un perfil de Hermes dedicado (ver `BIGLOBSTER_SETUP.md` en el repo `hermes-sandbox`); contacta con quien gestione Hermes para darlo de alta caso por caso.
+
 ### 6. Dominio (si procede)
+
 - [ ] Zeabur → Networking → Add Domain → introducir dominio del cliente
 - [ ] Pasar al cliente el registro DNS a configurar
 - [ ] Verificar que el dominio resuelve correctamente (esperar hasta 1h)
@@ -58,6 +68,7 @@ En Zeabur → tu servicio → Variables:
 
 ## Entrega al cliente (30 minutos)
 
+- [ ] Confirmar que la API Key de OpenRouter configurada en **Modelo IA** es la del cliente, no una temporal de BigLobster
 - [ ] Compartir URL del panel + contraseña
 - [ ] Mostrar cómo publicar un artículo
 - [ ] Mostrar cómo usar el agente de chat
@@ -78,12 +89,12 @@ En Zeabur → tu servicio → Variables:
 
 ## Datos del cliente (rellenar por cada instancia)
 
-| Campo | Valor |
-|---|---|
-| Empresa | |
-| Sector | |
-| URL Zeabur | |
-| Dominio propio | |
-| Email notificaciones | |
-| Fecha de alta | |
-| Estado | En setup / Entregado / Activo |
+| Campo                | Valor                         |
+| -------------------- | ----------------------------- |
+| Empresa              |                               |
+| Sector               |                               |
+| URL Zeabur           |                               |
+| Dominio propio       |                               |
+| Email notificaciones |                               |
+| Fecha de alta        |                               |
+| Estado               | En setup / Entregado / Activo |

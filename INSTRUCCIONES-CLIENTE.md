@@ -17,6 +17,7 @@ La primera vez que accedas a tu web verás el asistente de configuración en:
 **https://tudominio.com/setup**
 
 El asistente te pedirá:
+
 1. **Nombre de tu empresa y sector** — aparecerá en toda la web
 2. **API Key de OpenRouter** — necesaria para activar el agente de marketing (gratuita en openrouter.ai)
 3. **Contraseña del panel** — con la que accederás cada vez
@@ -26,14 +27,18 @@ El asistente te pedirá:
 ## Secciones del panel
 
 ### Mi sitio web
+
 Configura los textos de cada página de tu web:
+
 - **Logo** — sube la imagen de tu empresa (PNG, JPG o SVG, máximo 2MB)
 - **Páginas** — edita el título, subtítulo y descripción de cada página: Inicio, Quiénes somos, Servicios, Contacto y Blog
 - **Modelo IA** — selecciona el modelo de inteligencia artificial para el agente (por defecto: gratuito)
 - **Notificaciones** — configura tu email para recibir avisos cuando alguien te contacte
 
 ### Blog
+
 Gestiona los artículos de tu web:
+
 - **Nuevo artículo** — escribe el título y contenido, elige si publicarlo o guardarlo como borrador
 - **Editar** — modifica cualquier artículo existente
 - **Publicar / Despublicar** — controla qué artículos ven tus visitantes
@@ -57,20 +62,25 @@ Para recibir un aviso cada vez que alguien te envíe un mensaje desde tu web:
 > Genera una nueva y úsala en el campo Contraseña.
 
 ### Agente de marketing
+
 El agente de inteligencia artificial puede ayudarte a:
+
 - **Crear artículos de blog** — dile el tema y lo escribe por ti (quedará como borrador para que lo revises)
 - **Mejorar textos de tu web** — pídele que cambie el título o descripción de cualquier página y lo aplicará directamente
 - **Redactar copies** — textos para redes sociales, emails o cualquier comunicación
 
 Ejemplos de lo que puedes pedirle:
+
 > "Escribe un artículo sobre los beneficios de nuestro servicio de limpieza industrial"
 > "Cambia el título de la página de inicio a Expertos en mantenimiento industrial desde 1995"
 > "Redacta una descripción para la página de servicios"
 
 ### Mensajes
+
 Aquí aparecen todos los mensajes que tus visitantes envían a través del formulario de contacto de tu web. Si configuraste las notificaciones, también los recibirás por email.
 
 ### Ajustes
+
 - **Ver mi sitio web** — abre tu web en una pestaña nueva
 - **Resetear sitio** — borra toda la configuración y el contenido para empezar de cero. **Esta acción no se puede deshacer.**
 

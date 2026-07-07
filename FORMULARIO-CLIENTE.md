@@ -7,9 +7,19 @@ Puedes responder a este documento y enviárnoslo por email o WhatsApp.
 
 **1. Datos de tu empresa**
 
-- Nombre de la empresa: 
-- Sector o tipo de negocio (ej: fontanería, gestoría, clínica dental): 
-- Descripción breve de lo que hacéis (2-3 frases): 
+- Nombre de la empresa:
+- Sector o tipo de negocio (ej: fontanería, gestoría, clínica dental):
+- Descripción breve de lo que hacéis (2-3 frases):
+
+---
+
+**1b. Tu plan y extras**
+
+Si ya completaste el formulario de compra en biglobster.top/agentes-en-alquiler.html, indícanos aquí tu selección para que la confirmemos:
+
+- Plan de web: Proyecto puntual / Proyecto + soporte / Retainer mensual
+- Nivel de inteligencia: High / Extra / Ultra
+- Agentes adicionales contratados (si alguno): Content Gap Hunter / SEO-GEO On-Site / Infographic Engineer / Off-Site GEO Scout / Ninguno
 
 ---
 
@@ -18,24 +28,28 @@ Puedes responder a este documento y enviárnoslo por email o WhatsApp.
 Para cada página, escribe un título y una descripción breve.
 Si prefieres que lo redacte nuestro agente de IA, escribe "IA" en cada campo.
 
-*Página de inicio:*
-- Título principal: 
-- Subtítulo: 
-- Descripción: 
+_Página de inicio:_
 
-*Quiénes somos:*
-- Título: 
-- Descripción: 
+- Título principal:
+- Subtítulo:
+- Descripción:
 
-*Servicios:*
-- Título: 
-- Descripción de servicios principales: 
+_Quiénes somos:_
 
-*Contacto:*
-- Título: 
-- Dirección (si quieres mostrarla): 
-- Teléfono (si quieres mostrarlo): 
-- Horario (si quieres mostrarlo): 
+- Título:
+- Descripción:
+
+_Servicios:_
+
+- Título:
+- Descripción de servicios principales:
+
+_Contacto:_
+
+- Título:
+- Dirección (si quieres mostrarla):
+- Teléfono (si quieres mostrarlo):
+- Horario (si quieres mostrarlo):
 
 ---
 
@@ -50,14 +64,14 @@ Si prefieres que lo redacte nuestro agente de IA, escribe "IA" en cada campo.
 **4. Dominio**
 
 - ¿Tienes dominio propio? (ej: tuempresa.com) Sí / No
-- Si sí, ¿cuál es? 
+- Si sí, ¿cuál es?
 - ¿Dónde lo compraste? (GoDaddy, Namecheap, etc.)
 
 ---
 
 **5. Notificaciones**
 
-- Email donde quieres recibir los mensajes de contacto de tu web: 
+- Email donde quieres recibir los mensajes de contacto de tu web:
 - ¿Usas Gmail, Outlook u otro proveedor de email?
 
 ---
@@ -65,7 +79,7 @@ Si prefieres que lo redacte nuestro agente de IA, escribe "IA" en cada campo.
 **6. Acceso al panel**
 
 - Contraseña que quieres usar para acceder al panel de administración:
-  *(mínimo 8 caracteres, guárdala en un lugar seguro)*
+  _(mínimo 8 caracteres, guárdala en un lugar seguro)_
 
 ---
 
