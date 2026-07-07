@@ -439,6 +439,9 @@ document.addEventListener("DOMContentLoaded", function () {
         var smtpHostInput = document.getElementById("smtp-host-input");
         var smtpPortInput = document.getElementById("smtp-port-input");
         var smtpUserInput = document.getElementById("smtp-user-input");
+        var whatsappNumberInput = document.getElementById(
+          "whatsapp-number-input",
+        );
 
         if (notifyEmailInput) {
           notifyEmailInput.value = cfg.notify_email || "";
@@ -451,6 +454,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (smtpUserInput) {
           smtpUserInput.value = cfg.smtp_user || "";
+        }
+        if (whatsappNumberInput) {
+          whatsappNumberInput.value = cfg.whatsapp_number || "";
         }
 
         if (cfg.logo_ext) {
@@ -618,6 +624,40 @@ document.addEventListener("DOMContentLoaded", function () {
           smtp_port: document.getElementById("smtp-port-input").value.trim(),
           smtp_user: document.getElementById("smtp-user-input").value.trim(),
           smtp_pass: document.getElementById("smtp-pass-input").value,
+        };
+
+        try {
+          var res = await fetch("/api/site/texts", {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify(payload),
+          });
+          var data = await res.json();
+          msg.textContent = data.success ? "✓ Guardado" : data.error || "Error";
+          msg.style.color = data.success ? "var(--accent)" : "var(--error)";
+          msg.style.display = "inline";
+          if (data.success) {
+            siteConfig = Object.assign(siteConfig, payload);
+          }
+          setTimeout(function () {
+            msg.style.display = "none";
+          }, 2500);
+        } catch {
+          msg.textContent = "Error de conexión";
+          msg.style.color = "var(--error)";
+          msg.style.display = "inline";
+        }
+      });
+
+    // WhatsApp button settings
+    document
+      .getElementById("save-whatsapp-btn")
+      .addEventListener("click", async function () {
+        var msg = document.getElementById("save-whatsapp-msg");
+        var payload = {
+          whatsapp_number: document
+            .getElementById("whatsapp-number-input")
+            .value.trim(),
         };
 
         try {

@@ -22,7 +22,22 @@
   --max-w: 960px;
 }
 
+[data-theme="dark"] {
+  --bg: #161b26;
+  --bg-subtle: #1d2333;
+  --text-primary: #edf0f7;
+  --text-secondary: #9ba3b8;
+  --text-muted: #8a91a4;
+  --border: #252d3f;
+  --accent: #d94f2e;
+  --accent-hover: #b8391c;
+  --accent-light: #2a1410;
+}
+
 body {
+  transition:
+    background 0.2s,
+    color 0.2s;
   font-family: var(--font);
   background: var(--bg);
   color: var(--text-primary);
@@ -33,10 +48,11 @@ body {
 /* NAV */
 .site-nav {
   border-bottom: 1px solid var(--border);
-  background: #fff;
+  background: var(--bg);
   position: sticky;
   top: 0;
   z-index: 100;
+  transition: background 0.2s;
 }
 .site-nav-inner {
   max-width: var(--max-w);
@@ -71,6 +87,31 @@ body {
   justify-content: center;
   color: #fff;
 }
+.site-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.site-nav-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 6px;
+  transition:
+    color 150ms,
+    background 150ms;
+}
+.site-nav-icon-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-subtle);
+}
 .site-nav-links {
   display: flex;
   gap: 0.25rem;
@@ -91,7 +132,7 @@ body {
 }
 .site-nav-link:hover {
   color: var(--text-primary);
-  background: #f3f4f6;
+  background: var(--bg-subtle);
 }
 .site-nav-link.active {
   color: var(--accent);
@@ -276,9 +317,12 @@ body {
   font-size: 0.9375rem;
   font-family: var(--font);
   color: var(--text-primary);
-  background: #fff;
+  background: var(--bg);
   outline: none;
-  transition: border-color 150ms;
+  transition:
+    border-color 150ms,
+    background 0.2s,
+    color 0.2s;
 }
 .site-contact-form input:focus,
 .site-contact-form textarea:focus {
@@ -294,6 +338,40 @@ body {
 }
 .blog-card {
   margin-bottom: 0;
+}
+
+/* COOKIE BANNER */
+#cookie-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: none;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  z-index: 1000;
+}
+#cookie-banner p {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+  flex: 1;
+}
+#cookie-banner .site-btn {
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  #cookie-banner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  #cookie-banner p {
+    flex: none;
+  }
 }
 
 /* FOOTER */
@@ -323,6 +401,52 @@ body {
 }
 .site-footer-links a:hover {
   color: var(--text-primary);
+}
+
+/* WHATSAPP FLOAT */
+.whatsapp-float {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #25d366;
+  color: #fff;
+  padding: 0.65rem 1.1rem;
+  border-radius: 2rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(37, 211, 102, 0.35);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+.whatsapp-float:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.45);
+}
+
+/* REVEAL */
+.reveal {
+  opacity: 0;
+  transform: translateY(1.25rem);
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s ease-out;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
 @media (max-width: 640px) {

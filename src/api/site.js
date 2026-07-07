@@ -49,6 +49,7 @@ router.get("/config", (req, res) => {
     "page_blog_subtitle",
     "logo_ext",
     "ai_model",
+    "whatsapp_number",
   ];
   const config = {};
   for (const k of keys) config[k] = getConfig(k);
@@ -78,6 +79,7 @@ router.post("/texts", requireAuth, (req, res) => {
     "smtp_pass",
     "notify_email",
     "ai_model",
+    "whatsapp_number",
   ];
   for (const key of allowed) {
     if (req.body[key] !== undefined) setConfig(key, req.body[key]);
