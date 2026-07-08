@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { requireAuth } from "../middleware/auth.js";
 import db, { getConfig, setConfig } from "../db/database.js";
+import { scheduleRebuild } from "../build/rebuild.js";
 
 const router = Router();
 const DEFAULT_AGENT_MODEL = "gpt-oss-20b:free";
@@ -113,6 +114,7 @@ function applyCreateArticleAction(data) {
   db.prepare(
     "INSERT INTO articles (title, slug, content, excerpt, status) VALUES (?, ?, ?, ?, ?)",
   ).run(title, slug, content, excerpt, status);
+  scheduleRebuild();
 
   return { actionResult: { type: "article_created" }, feedback: "" };
 }

@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { mkdirSync } from "node:fs";
 import { getConfig } from "./db/database.js";
+import { buildOnStartup } from "./build/rebuild.js";
 import authRouter from "./api/auth.js";
 import chatRouter from "./api/chat.js";
 import blogRouter from "./api/blog.js";
@@ -51,20 +52,14 @@ app.get("/panel", (req, res) => {
   res.sendFile(join(__dirname, "../web/panel.html"));
 });
 
-// Public site pages
-const pages = ["quienes-somos", "servicios", "contacto", "blog"];
-for (const p of pages) {
-  app.get("/" + p, (req, res) =>
-    res.sendFile(join(__dirname, "../web/" + p + ".html")),
-  );
-}
-
-// Blog article individual page
-app.get("/blog/:slug", (req, res) =>
-  res.sendFile(join(__dirname, "../web/blog-post.html")),
+// Public site pages — Eleventy-built static HTML (site/ -> _site/), rebuilt
+// on every content write (see src/build/rebuild.js). `extensions: ["html"]`
+// keeps clean URLs (/servicios, /blog/:slug) without redirects.
+app.use(
+  express.static(join(__dirname, "../_site"), { extensions: ["html"] }),
 );
 
-// Static files
+// Panel/setup assets (panel.js, setup.js, style-panel.css, etc.)
 app.use(express.static(join(__dirname, "../web")));
 
 // 404
@@ -73,6 +68,8 @@ app.use((req, res) => {
     if (err) res.status(404).json({ error: "Not found" });
   });
 });
+
+await buildOnStartup();
 
 app.listen(PORT, () => {
   console.log(`🦞 bl-site-package running on port ${PORT}`);

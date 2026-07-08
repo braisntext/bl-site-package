@@ -3,7 +3,7 @@ import multer from "multer";
 import { mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { getConfig, setConfig } from "../db/database.js";
+import { getConfig, setConfig, PUBLIC_CONFIG_KEYS } from "../db/database.js";
 import { requireAuth } from "../middleware/auth.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -30,29 +30,8 @@ const router = express.Router();
 
 // GET /api/site/config — public
 router.get("/config", (req, res) => {
-  const keys = [
-    "company_name",
-    "sector",
-    "page_index_title",
-    "page_index_subtitle",
-    "page_index_desc",
-    "page_quienes_title",
-    "page_quienes_subtitle",
-    "page_quienes_desc",
-    "page_servicios_title",
-    "page_servicios_subtitle",
-    "page_servicios_desc",
-    "page_contacto_title",
-    "page_contacto_subtitle",
-    "page_contacto_desc",
-    "page_blog_title",
-    "page_blog_subtitle",
-    "logo_ext",
-    "ai_model",
-    "whatsapp_number",
-  ];
   const config = {};
-  for (const k of keys) config[k] = getConfig(k);
+  for (const k of PUBLIC_CONFIG_KEYS) config[k] = getConfig(k);
   res.json(config);
 });
 

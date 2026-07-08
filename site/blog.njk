@@ -1,0 +1,26 @@
+---
+layout: base.njk
+navActive: blog
+permalink: "/blog/index.html"
+---
+<main class="site-page"><div class="site-page-inner">
+  <h1 class="reveal">{{ (site.page_blog_title or "Blog") | safe }}</h1>
+  {%- if site.page_blog_subtitle %}
+  <p class="site-page-subtitle reveal">{{ site.page_blog_subtitle | safe }}</p>
+  {%- endif %}
+  <div id="blog-posts-list">
+    {%- if not articles.length %}
+    <p class="site-empty">Aún no hay artículos publicados.</p>
+    {%- else %}
+    {%- for post in articles %}
+    <article class="site-post-card">
+      <h2><a href="/blog/{{ post.slug }}">{{ post.title }}</a></h2>
+      {%- if post.excerpt %}
+      <p>{{ post.excerpt }}</p>
+      {%- endif %}
+      <span class="site-post-date">{{ post.dateEs }}</span>
+    </article>
+    {%- endfor %}
+    {%- endif %}
+  </div>
+</div></main>

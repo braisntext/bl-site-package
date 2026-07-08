@@ -1,0 +1,18 @@
+---
+layout: base.njk
+navActive: blog
+pagination:
+  data: articles
+  size: 1
+  alias: post
+permalink: "/blog/{{ post.slug }}.html"
+eleventyComputed:
+  title: "{{ post.title }}"
+  description: "{{ post.excerpt }}"
+---
+<main class="site-page"><div class="site-page-inner site-post-content">
+  <a href="/blog" class="site-back-link">← Volver al blog</a>
+  <h1>{{ post.title }}</h1>
+  <span class="site-post-date">{{ post.dateEs }}</span>
+  <div class="site-post-body">{{ post.contentHtml | safe }}</div>
+</div></main>
