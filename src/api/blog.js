@@ -2,6 +2,7 @@ import { Router } from "express";
 import jwt from "jsonwebtoken";
 import { verifyJWT } from "../middleware/auth.js";
 import db, { getConfig } from "../db/database.js";
+import { scheduleRebuild } from "../build/rebuild.js";
 
 const router = Router();
 
@@ -82,6 +83,7 @@ router.post("/posts", verifyJWT, (req, res) => {
   const article = db
     .prepare("SELECT * FROM articles WHERE id = ?")
     .get(result.lastInsertRowid);
+  scheduleRebuild();
   res.status(201).json({ success: true, id: article.id, ...article });
 });
 
@@ -104,6 +106,7 @@ router.put("/posts/:id", verifyJWT, (req, res) => {
     WHERE id = ?`,
   ).run(title, content, excerpt, status, req.params.id);
 
+  scheduleRebuild();
   res.json({
     success: true,
     ...db.prepare("SELECT * FROM articles WHERE id = ?").get(req.params.id),
@@ -117,6 +120,7 @@ router.delete("/posts/:id", verifyJWT, (req, res) => {
     .run(req.params.id);
   if (result.changes === 0)
     return res.status(404).json({ error: "Artículo no encontrado" });
+  scheduleRebuild();
   res.json({ success: true });
 });
 

@@ -1,0 +1,17 @@
+---
+layout: base.njk
+navActive: contacto
+permalink: "/contacto.html"
+---
+<main class="site-page"><div class="site-page-inner">
+  <h1 class="reveal">{{ (site.page_contacto_title or "Contacto") | safe }}</h1>
+  <p class="site-page-subtitle reveal">{{ (site.page_contacto_subtitle or "Escríbenos y te responderemos lo antes posible.") | safe }}</p>
+  <p class="site-page-desc reveal">{{ (site.page_contacto_desc or "Cuéntanos qué necesitas y te contactaremos con una propuesta clara.") | safe }}</p>
+  <form class="site-contact-form reveal" id="contact-form">
+    <input type="text" id="contact-name" placeholder="Nombre" required>
+    <input type="email" id="contact-email" placeholder="Email" required>
+    <textarea rows="5" id="contact-message" placeholder="Mensaje" required></textarea>
+    <button type="submit" class="site-btn" id="contact-submit">Enviar</button>
+    <p class="site-form-msg" id="contact-form-msg" aria-live="polite"></p>
+  </form>
+</div></main>
