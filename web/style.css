@@ -295,6 +295,10 @@ body {
   font-size: 0.8rem;
   color: var(--text-muted);
 }
+.site-post-cta {
+  display: inline-block;
+  margin-top: 2rem;
+}
 .site-empty,
 .site-loading {
   color: var(--text-muted);

@@ -1,13 +1,22 @@
+import { marked } from "marked";
+import sanitizeHtml from "sanitize-html";
 import db from "../../src/db/database.js";
 
-// Mirrors formatContent()/toLocaleDateString("es-ES") from the old client
-// renderer, precomputed here since Nunjucks has no equivalent built in.
+marked.setOptions({ breaks: true });
+
+// breaks:true keeps a lone "\n" rendering as <br>, matching the old plain-text
+// behavior, so existing posts (no markdown syntax) render unchanged.
 function formatContent(text) {
   if (!text) return "";
-  return text
-    .split(/\n\n+/)
-    .map((p) => `<p>${p.replace(/\n/g, "<br>")}</p>`)
-    .join("");
+  return sanitizeHtml(marked.parse(text), {
+    allowedTags: [
+      "p", "br", "h2", "h3", "h4", "ul", "ol", "li", "strong", "em",
+      "a", "table", "thead", "tbody", "tr", "td", "th", "blockquote",
+    ],
+    allowedAttributes: {
+      a: ["href", "rel", "target"],
+    },
+  });
 }
 
 export default function () {
