@@ -59,9 +59,16 @@ router.get("/posts/:slug", (req, res) => {
 
 // POST /api/blog/posts — create
 router.post("/posts", verifyJWT, (req, res) => {
-  const { title, content, excerpt, status = "draft" } = req.body;
+  const { title, content, excerpt, status = "draft", cta_url, cta_label } = req.body;
   if (!title || !content)
     return res.status(400).json({ error: "Título y contenido requeridos" });
+  if (cta_url) {
+    try {
+      new URL(cta_url);
+    } catch {
+      return res.status(400).json({ error: "cta_url no es una URL válida" });
+    }
+  }
 
   let slug = generateSlug(title);
   let suffix = 0;
@@ -76,9 +83,9 @@ router.post("/posts", verifyJWT, (req, res) => {
 
   const result = db
     .prepare(
-      "INSERT INTO articles (title, slug, content, excerpt, status) VALUES (?, ?, ?, ?, ?)",
+      "INSERT INTO articles (title, slug, content, excerpt, status, cta_url, cta_label) VALUES (?, ?, ?, ?, ?, ?, ?)",
     )
-    .run(title, slug, content, excerpt || "", status);
+    .run(title, slug, content, excerpt || "", status, cta_url || null, cta_label || null);
 
   const article = db
     .prepare("SELECT * FROM articles WHERE id = ?")
@@ -89,12 +96,19 @@ router.post("/posts", verifyJWT, (req, res) => {
 
 // PUT /api/blog/posts/:id — update
 router.put("/posts/:id", verifyJWT, (req, res) => {
-  const { title, content, excerpt, status } = req.body;
+  const { title, content, excerpt, status, cta_url, cta_label } = req.body;
   const article = db
     .prepare("SELECT * FROM articles WHERE id = ?")
     .get(req.params.id);
   if (!article)
     return res.status(404).json({ error: "Artículo no encontrado" });
+  if (cta_url) {
+    try {
+      new URL(cta_url);
+    } catch {
+      return res.status(400).json({ error: "cta_url no es una URL válida" });
+    }
+  }
 
   db.prepare(
     `UPDATE articles SET
@@ -102,9 +116,11 @@ router.put("/posts/:id", verifyJWT, (req, res) => {
       content = COALESCE(?, content),
       excerpt = COALESCE(?, excerpt),
       status = COALESCE(?, status),
+      cta_url = COALESCE(?, cta_url),
+      cta_label = COALESCE(?, cta_label),
       updated_at = datetime('now')
     WHERE id = ?`,
-  ).run(title, content, excerpt, status, req.params.id);
+  ).run(title, content, excerpt, status, cta_url, cta_label, req.params.id);
 
   scheduleRebuild();
   res.json({

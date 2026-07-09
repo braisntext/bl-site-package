@@ -68,6 +68,19 @@ db.exec(`
   );
 `);
 
+// Additive migration for columns added after a client's DB was first
+// created (CREATE TABLE IF NOT EXISTS above only applies to brand-new DBs).
+function ensureColumn(table, column, definition) {
+  const exists = db
+    .prepare(`PRAGMA table_info(${table})`)
+    .all()
+    .some((col) => col.name === column);
+  if (!exists) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+}
+
+ensureColumn("articles", "cta_url", "TEXT");
+ensureColumn("articles", "cta_label", "TEXT");
+
 export function getConfig(key) {
   const row = db.prepare("SELECT value FROM config WHERE key = ?").get(key);
   return row ? row.value : null;

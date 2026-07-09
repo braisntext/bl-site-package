@@ -257,6 +257,8 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("article-edit-id").value = "";
       document.getElementById("article-title-input").value = "";
       document.getElementById("article-content-input").value = "";
+      document.getElementById("article-cta-url-input").value = "";
+      document.getElementById("article-cta-label-input").value = "";
       document.getElementById("article-status-select").value = "draft";
       document.getElementById("article-form-title").textContent =
         "Nuevo artículo";
@@ -279,6 +281,10 @@ document.addEventListener("DOMContentLoaded", function () {
     var body = {
       title: document.getElementById("article-title-input").value.trim(),
       content: document.getElementById("article-content-input").value.trim(),
+      cta_url: document.getElementById("article-cta-url-input").value.trim(),
+      cta_label: document
+        .getElementById("article-cta-label-input")
+        .value.trim(),
       status: document.getElementById("article-status-select").value,
     };
     var url = id ? "/api/blog/posts/" + id : "/api/blog/posts";
@@ -360,6 +366,10 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("article-title-input").value = post.title;
             document.getElementById("article-content-input").value =
               post.content;
+            document.getElementById("article-cta-url-input").value =
+              post.cta_url || "";
+            document.getElementById("article-cta-label-input").value =
+              post.cta_label || "";
             document.getElementById("article-status-select").value =
               post.status;
             document.getElementById("article-form-title").textContent =
