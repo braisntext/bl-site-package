@@ -95,6 +95,7 @@ En Zeabur → tu servicio → Variables:
 | Sector               |                               |
 | URL Zeabur           |                               |
 | Dominio propio       |                               |
+| Web actual (opcional, para Agente de Contenido Inicial) |                               |
 | Email notificaciones |                               |
 | Fecha de alta        |                               |
 | Estado               | En setup / Entregado / Activo |
