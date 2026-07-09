@@ -19,14 +19,28 @@ Si ya completaste el formulario de compra en biglobster.top/agentes-en-alquiler.
 
 - Plan de web: Proyecto puntual / Proyecto + soporte / Retainer mensual
 - Nivel de inteligencia: High / Extra / Ultra
-- Agentes adicionales contratados (si alguno): Content Gap Hunter / SEO-GEO On-Site / Infographic Engineer / Off-Site GEO Scout / Ninguno
+- Agentes adicionales contratados (si alguno): Content Gap Hunter / SEO-GEO On-Site / Infographic Engineer / Off-Site GEO Scout / Agente de Contenido Inicial / Ninguno
+
+---
+
+**1c. Tu web actual (opcional)**
+
+¿Tienes una web actual que quieras que usemos como base para redactar el
+contenido de la nueva? Si nos das la URL, nuestro agente de IA la lee y
+adapta el contenido a tu nuevo sitio (mejorado y optimizado), en vez de
+partir de cero.
+
+- ¿Tienes una web actual? Sí / No
+- Si sí, ¿cuál es la URL?
 
 ---
 
 **2. Páginas de tu web**
 
 Para cada página, escribe un título y una descripción breve.
-Si prefieres que lo redacte nuestro agente de IA, escribe "IA" en cada campo.
+Si prefieres que lo redacte nuestro agente de IA, escribe "IA" en cada campo
+(o, si rellenaste el punto 1c con tu web actual, puedes dejar estos campos en
+blanco y el agente los redactará a partir de tu web actual).
 
 _Página de inicio:_
 
