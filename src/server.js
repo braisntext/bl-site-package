@@ -11,6 +11,10 @@ import blogRouter from "./api/blog.js";
 import contactRouter from "./api/contact.js";
 import setupRouter from "./api/setup.js";
 import siteRouter from "./api/site.js";
+import productsRouter from "./api/products.js";
+import reservationsRouter from "./api/reservations.js";
+import syncRouter from "./api/sync.js";
+import { startLiderpapelScheduler } from "./sync/liderpapel/scheduler.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -25,7 +29,10 @@ app.use(express.json());
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.fontshare.com; font-src 'self' https://fonts.gstatic.com https://api.fontshare.com; img-src 'self' data: blob:; connect-src 'self' https://openrouter.ai",
+    // img-src allows Liderpapel's product-image host so hotlinked catalog
+    // images aren't silently blocked. TODO: confirm the exact media host
+    // once real MultimediaLinks URLs are seen (see src/sync/liderpapel/mapping.js).
+    "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.fontshare.com; font-src 'self' https://fonts.gstatic.com https://api.fontshare.com; img-src 'self' data: blob: https://*.liderpapel.com; connect-src 'self' https://openrouter.ai",
   );
   next();
 });
@@ -39,6 +46,9 @@ app.use("/api/blog", blogRouter);
 app.use("/api/contact", contactRouter);
 app.use("/api/setup", setupRouter);
 app.use("/api/site", siteRouter);
+app.use("/api/products", productsRouter);
+app.use("/api/reservations", reservationsRouter);
+app.use("/api/sync", syncRouter);
 
 // Panel & Setup
 app.get("/setup", (req, res) =>
@@ -70,6 +80,7 @@ app.use((req, res) => {
 });
 
 await buildOnStartup();
+startLiderpapelScheduler();
 
 app.listen(PORT, () => {
   console.log(`🦞 bl-site-package running on port ${PORT}`);

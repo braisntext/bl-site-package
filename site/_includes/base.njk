@@ -3,14 +3,16 @@
   "quienes": site.page_quienes_title or "Quiénes somos",
   "servicios": site.page_servicios_title or "Servicios",
   "contacto": site.page_contacto_title or "Contacto",
-  "blog": site.page_blog_title or "Blog"
+  "blog": site.page_blog_title or "Blog",
+  "productos": "Catálogo"
 } -%}
 {%- set pageDescMap = {
   "index": site.page_index_desc or site.page_index_subtitle or "",
   "quienes": site.page_quienes_desc or site.page_quienes_subtitle or "",
   "servicios": site.page_servicios_desc or site.page_servicios_subtitle or "",
   "contacto": site.page_contacto_desc or site.page_contacto_subtitle or "",
-  "blog": site.page_blog_subtitle or ""
+  "blog": site.page_blog_subtitle or "",
+  "productos": "Reserva online y recoge en tienda"
 } -%}
 {%- set resolvedTitle = title or pageTitleMap[navActive] or site.company_name -%}
 {%- set resolvedDesc = description or pageDescMap[navActive] or "" -%}
@@ -43,6 +45,10 @@
           <span>{{ site.company_name or "Mi empresa" }}</span>
         </a>
         <div class="site-nav-actions">
+          <a href="/carrito" class="site-nav-icon-btn cart-icon-link" aria-label="Carrito">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            <span id="cart-count-badge" class="cart-count-badge" hidden>0</span>
+          </a>
           <button id="theme-toggle" class="site-nav-icon-btn" aria-label="Cambiar tema"></button>
           <button class="site-nav-toggle" aria-label="Menú" onclick="this.closest('nav').querySelector('.site-nav-links').classList.toggle('open')">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
@@ -54,6 +60,7 @@
           <a href="/servicios" class="site-nav-link{% if navActive == 'servicios' %} active{% endif %}">Servicios</a>
           <a href="/contacto" class="site-nav-link{% if navActive == 'contacto' %} active{% endif %}">Contacto</a>
           <a href="/blog" class="site-nav-link{% if navActive == 'blog' %} active{% endif %}">Blog</a>
+          <a href="/productos" class="site-nav-link{% if navActive == 'productos' %} active{% endif %}">Catálogo</a>
         </div>
       </div>
     </nav>
@@ -68,6 +75,7 @@
           <a href="/servicios">Servicios</a>
           <a href="/contacto">Contacto</a>
           <a href="/blog">Blog</a>
+          <a href="/productos">Catálogo</a>
         </div>
       </div>
     </footer>
@@ -80,5 +88,6 @@
     {%- endif %}
   </div>
   <script src="/site.js"></script>
+  <script src="/cart.js" defer></script>
 </body>
 </html>

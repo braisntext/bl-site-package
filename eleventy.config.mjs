@@ -8,6 +8,8 @@
 export default function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy({ "web/style.css": "style.css" });
   eleventyConfig.addPassthroughCopy({ "web/site.js": "site.js" });
+  eleventyConfig.addPassthroughCopy({ "web/cart.js": "cart.js" });
+  eleventyConfig.addPassthroughCopy({ "web/img": "img" });
 
   return {
     dir: {
