@@ -66,6 +66,45 @@ db.exec(`
     message TEXT NOT NULL,
     created_at TEXT DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS products (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sku TEXT UNIQUE NOT NULL,
+    slug TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    category TEXT,
+    price_cents INTEGER NOT NULL DEFAULT 0,
+    stock_qty INTEGER NOT NULL DEFAULT 0,
+    image_url TEXT,
+    feed_active INTEGER NOT NULL DEFAULT 1,
+    active INTEGER NOT NULL DEFAULT 1,
+    last_synced_at TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS reservations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    customer_name TEXT NOT NULL,
+    customer_email TEXT NOT NULL,
+    customer_phone TEXT,
+    notes TEXT,
+    status TEXT NOT NULL DEFAULT 'pending',
+    total_cents INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS reservation_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    reservation_id INTEGER NOT NULL,
+    sku TEXT NOT NULL,
+    product_name TEXT NOT NULL,
+    unit_price_cents INTEGER NOT NULL,
+    quantity INTEGER NOT NULL,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
 `);
 
 // Additive migration for columns added after a client's DB was first
@@ -80,6 +119,16 @@ function ensureColumn(table, column, definition) {
 
 ensureColumn("articles", "cta_url", "TEXT");
 ensureColumn("articles", "cta_label", "TEXT");
+
+// Seeds a config default without triggering scheduleRebuild() (unlike
+// setConfig) and without overwriting a value an admin already set.
+function seedConfigDefault(key, value) {
+  db.prepare("INSERT OR IGNORE INTO config (key, value) VALUES (?, ?)").run(key, value);
+}
+
+seedConfigDefault("liderpapel_sftp_host", "sftp.liderpapel.com");
+seedConfigDefault("liderpapel_sftp_port", "22");
+seedConfigDefault("liderpapel_sftp_user", "20603");
 
 export function getConfig(key) {
   const row = db.prepare("SELECT value FROM config WHERE key = ?").get(key);

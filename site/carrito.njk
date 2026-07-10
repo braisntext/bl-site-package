@@ -1,0 +1,35 @@
+---
+layout: base.njk
+navActive: productos
+permalink: "/carrito/index.html"
+title: "Carrito"
+---
+<main class="site-page"><div class="site-page-inner">
+  <h1 class="reveal">Carrito</h1>
+
+  <div id="cart-app">
+    <div id="cart-empty-msg" class="site-empty" hidden>Tu carrito está vacío. <a href="/productos">Ver catálogo</a>.</div>
+
+    <table id="cart-table" class="cart-table" hidden>
+      <thead>
+        <tr><th>Producto</th><th>Cantidad</th><th>Precio</th><th></th></tr>
+      </thead>
+      <tbody id="cart-items"></tbody>
+      <tfoot>
+        <tr><td colspan="2"></td><td id="cart-total"></td><td></td></tr>
+      </tfoot>
+    </table>
+
+    <form id="checkout-form" class="site-contact-form" hidden>
+      <h2>Datos de recogida</h2>
+      <p class="site-page-desc">Reserva tus productos y recógelos en tienda. No se realiza ningún pago online.</p>
+      <input type="text" name="customer_name" placeholder="Nombre y apellidos" required>
+      <input type="email" name="customer_email" placeholder="Email" required>
+      <input type="tel" name="customer_phone" placeholder="Teléfono">
+      <textarea name="notes" placeholder="Notas (opcional)" rows="3"></textarea>
+      <button type="submit" class="site-btn">Confirmar reserva</button>
+    </form>
+
+    <div id="checkout-success" class="site-page-body" hidden></div>
+  </div>
+</div></main>

@@ -5,3 +5,4 @@ data/
 .DS_Store
 package-lock.json
 _site/
+.gstack/

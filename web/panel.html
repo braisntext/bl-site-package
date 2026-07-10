@@ -273,6 +273,22 @@
               </button>
             </li>
             <li>
+              <button class="sidebar-nav-item" data-section="productos">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M20.9 7.55a.5.5 0 0 0-.4-.55L12 5 3.5 7a.5.5 0 0 0-.4.55L4 15h16z" />
+                  <path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" />
+                </svg>
+                <span>Productos</span>
+              </button>
+            </li>
+            <li>
               <button class="sidebar-nav-item" data-section="servicio">
                 <svg
                   width="20"
@@ -909,6 +925,67 @@
             </div>
           </section>
 
+          <!-- PRODUCTOS -->
+          <section data-panel="productos" class="panel-section" hidden>
+            <div class="section-header">
+              <h2>Productos</h2>
+              <p>Catálogo sincronizado desde Liderpapel, reservas de recogida en tienda y configuración de la sincronización.</p>
+            </div>
+
+            <div class="productos-tabs">
+              <button class="productos-tab active" data-productos-tab="catalogo">Catálogo</button>
+              <button class="productos-tab" data-productos-tab="pedidos">Pedidos</button>
+              <button class="productos-tab" data-productos-tab="sync">Sincronización</button>
+            </div>
+
+            <!-- TAB: CATÁLOGO -->
+            <div class="productos-tab-panel active" id="productos-catalogo">
+              <div id="productos-catalog-list"></div>
+            </div>
+
+            <!-- TAB: PEDIDOS -->
+            <div class="productos-tab-panel" id="productos-pedidos">
+              <div id="productos-reservations-list"></div>
+            </div>
+
+            <!-- TAB: SINCRONIZACIÓN -->
+            <div class="productos-tab-panel" id="productos-sync">
+              <div class="misite-block">
+                <h3>Estado de la sincronización</h3>
+                <p id="sync-status-line" class="misite-hint">Cargando…</p>
+                <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem">
+                  <button class="btn-primary-sm" id="sync-run-btn">Sincronizar ahora</button>
+                  <span id="sync-run-msg" style="font-size: 0.8125rem" hidden></span>
+                </div>
+
+                <h3>Credenciales sFTP de Liderpapel</h3>
+                <form id="sync-config-form">
+                  <div class="form-group">
+                    <label for="sync-host-input">Host</label>
+                    <input type="text" id="sync-host-input" />
+                  </div>
+                  <div class="form-group" style="margin-top: 1rem">
+                    <label for="sync-port-input">Puerto</label>
+                    <input type="text" id="sync-port-input" />
+                  </div>
+                  <div class="form-group" style="margin-top: 1rem">
+                    <label for="sync-user-input">Usuario</label>
+                    <input type="text" id="sync-user-input" />
+                  </div>
+                  <div class="form-group" style="margin-top: 1rem">
+                    <label for="sync-pass-input">Contraseña</label>
+                    <input type="password" id="sync-pass-input" placeholder="••••••••" autocomplete="new-password" />
+                    <p id="sync-pass-hint" class="misite-hint"></p>
+                  </div>
+                  <div style="margin-top: 1.5rem; display: flex; gap: 1rem; align-items: center">
+                    <button type="submit" class="btn-primary-sm">Guardar credenciales</button>
+                    <span id="sync-config-msg" style="font-size: 0.8125rem" hidden></span>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </section>
+
           <!-- MI SERVICIO -->
           <section data-panel="servicio" class="panel-section" hidden>
             <div class="section-header"><h2>Mi servicio</h2></div>
@@ -1364,6 +1441,87 @@
         font-size: 0.9375rem;
         color: var(--text-secondary);
         white-space: pre-line;
+      }
+
+      /* PRODUCTOS styles — distinct class names from .misite-tab/.misite-panel
+         on purpose: that pair already has a global click handler wired in
+         panel.js, so reusing it would make both tab groups fight over it. */
+      .productos-tabs {
+        display: flex;
+        gap: 0.25rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0;
+      }
+      .productos-tab {
+        padding: 0.5rem 1rem;
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        cursor: pointer;
+        margin-bottom: -1px;
+        transition:
+          color 150ms,
+          border-color 150ms;
+      }
+      .productos-tab:hover {
+        color: var(--text-primary);
+      }
+      .productos-tab.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+      }
+      .productos-tab-panel {
+        display: none;
+      }
+      .productos-tab-panel.active {
+        display: block;
+      }
+      .product-row,
+      .reservation-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 1rem 1.25rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem 1.25rem;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .product-row-info,
+      .reservation-card-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+      .product-row-name,
+      .reservation-card-name {
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+      .product-row-meta,
+      .reservation-card-meta {
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+      }
+      .reservation-card-items {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        white-space: pre-line;
+        flex-basis: 100%;
+      }
+      .reservation-status-select {
+        padding: 0.375rem 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--bg-base);
+        color: var(--text-primary);
+        cursor: pointer;
       }
     </style>
 

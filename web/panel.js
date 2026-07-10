@@ -110,6 +110,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (name === "blog") loadArticles();
     if (name === "messages") loadMessages();
     if (name === "misite") initMiSite();
+    if (name === "productos") initProductos();
   }
 
   navItems.forEach(function (btn) {
@@ -863,5 +864,270 @@ document.addEventListener("DOMContentLoaded", function () {
         );
       })
       .join("");
+  }
+
+  // ── PRODUCTOS ────────────────────────────────────────────────────
+  var productosInitialized = false;
+
+  function formatEurCents(cents) {
+    return (cents / 100).toLocaleString("es-ES", { style: "currency", currency: "EUR" });
+  }
+
+  function loadProductsList() {
+    fetch("/api/products", { headers: authHeaders() })
+      .then(function (r) {
+        return r.json();
+      })
+      .then(function (data) {
+        var list = document.getElementById("productos-catalog-list");
+        var products = data.products || [];
+        list.textContent = "";
+        if (!products.length) {
+          var empty = document.createElement("p");
+          empty.style.color = "var(--text-muted)";
+          empty.style.padding = "2rem 0";
+          empty.textContent = "Todavía no hay productos sincronizados.";
+          list.appendChild(empty);
+          return;
+        }
+        products.forEach(function (p) {
+          var row = document.createElement("div");
+          row.className = "product-row";
+
+          var info = document.createElement("div");
+          info.className = "product-row-info";
+          var name = document.createElement("span");
+          name.className = "product-row-name";
+          name.textContent = p.name;
+          var meta = document.createElement("span");
+          meta.className = "product-row-meta";
+          meta.textContent =
+            p.sku + " · " + (p.category || "Sin categoría") + " · " +
+            formatEurCents(p.price_cents) + " · stock " + p.stock_qty;
+          info.appendChild(name);
+          info.appendChild(meta);
+
+          var label = document.createElement("label");
+          label.style.display = "flex";
+          label.style.alignItems = "center";
+          label.style.gap = "0.5rem";
+          var checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = Boolean(p.active);
+          checkbox.addEventListener("change", function () {
+            fetch("/api/products/" + p.id, {
+              method: "PUT",
+              headers: authHeaders(),
+              body: JSON.stringify({ active: checkbox.checked }),
+            }).catch(function () {});
+          });
+          var labelText = document.createElement("span");
+          labelText.textContent = "Visible en la tienda";
+          label.appendChild(checkbox);
+          label.appendChild(labelText);
+
+          row.appendChild(info);
+          row.appendChild(label);
+          list.appendChild(row);
+        });
+      })
+      .catch(function () {});
+  }
+
+  var RESERVATION_STATUSES = [
+    ["pending", "Pendiente"],
+    ["confirmed", "Confirmada"],
+    ["ready_for_pickup", "Lista para recoger"],
+    ["completed", "Completada"],
+    ["cancelled", "Cancelada"],
+  ];
+
+  function loadReservationsList() {
+    fetch("/api/reservations", { headers: authHeaders() })
+      .then(function (r) {
+        return r.json();
+      })
+      .then(function (data) {
+        var list = document.getElementById("productos-reservations-list");
+        var reservations = data.reservations || [];
+        list.textContent = "";
+        if (!reservations.length) {
+          var empty = document.createElement("p");
+          empty.style.color = "var(--text-muted)";
+          empty.style.padding = "2rem 0";
+          empty.textContent = "Todavía no hay reservas.";
+          list.appendChild(empty);
+          return;
+        }
+        reservations.forEach(function (res) {
+          var card = document.createElement("article");
+          card.className = "reservation-card";
+
+          var info = document.createElement("div");
+          info.className = "reservation-card-info";
+          var name = document.createElement("span");
+          name.className = "reservation-card-name";
+          name.textContent = res.customer_name + " — " + formatEurCents(res.total_cents);
+          var meta = document.createElement("span");
+          meta.className = "reservation-card-meta";
+          meta.textContent =
+            res.customer_email + (res.customer_phone ? " · " + res.customer_phone : "") +
+            " · " + new Date(res.created_at).toLocaleString("es-ES");
+          info.appendChild(name);
+          info.appendChild(meta);
+
+          var select = document.createElement("select");
+          select.className = "reservation-status-select";
+          RESERVATION_STATUSES.forEach(function (pair) {
+            var opt = document.createElement("option");
+            opt.value = pair[0];
+            opt.textContent = pair[1];
+            if (pair[0] === res.status) opt.selected = true;
+            select.appendChild(opt);
+          });
+          select.addEventListener("change", function () {
+            fetch("/api/reservations/" + res.id, {
+              method: "PUT",
+              headers: authHeaders(),
+              body: JSON.stringify({ status: select.value }),
+            }).catch(function () {});
+          });
+
+          card.appendChild(info);
+          card.appendChild(select);
+
+          if (res.notes) {
+            var notes = document.createElement("div");
+            notes.className = "reservation-card-items";
+            notes.textContent = "Notas: " + res.notes;
+            card.appendChild(notes);
+          }
+
+          list.appendChild(card);
+        });
+      })
+      .catch(function () {});
+  }
+
+  function loadSyncStatus() {
+    fetch("/api/sync/liderpapel/status", { headers: authHeaders() })
+      .then(function (r) {
+        return r.json();
+      })
+      .then(function (data) {
+        var hostInput = document.getElementById("sync-host-input");
+        var portInput = document.getElementById("sync-port-input");
+        var userInput = document.getElementById("sync-user-input");
+        if (!hostInput.dataset.touched) hostInput.value = data.host || "";
+        if (!portInput.dataset.touched) portInput.value = data.port || "";
+        if (!userInput.dataset.touched) userInput.value = data.user || "";
+        document.getElementById("sync-pass-hint").textContent = data.hasPassword
+          ? "Contraseña configurada. Déjala en blanco para no cambiarla."
+          : "Todavía no se ha configurado ninguna contraseña.";
+
+        var statusLine = document.getElementById("sync-status-line");
+        if (!data.lastSyncAt) {
+          statusLine.textContent = "Todavía no se ha ejecutado ninguna sincronización.";
+        } else {
+          var when = new Date(data.lastSyncAt).toLocaleString("es-ES");
+          if (data.lastSyncStatus === "error") {
+            statusLine.textContent = "Último intento (" + when + "): error — " + data.lastSyncMessage;
+          } else {
+            statusLine.textContent =
+              "Última sincronización (" + when + "): " + (data.lastSyncCount || 0) + " productos.";
+          }
+        }
+      })
+      .catch(function () {});
+  }
+
+  function initProductos() {
+    loadProductsList();
+    loadReservationsList();
+    loadSyncStatus();
+
+    if (productosInitialized) return;
+    productosInitialized = true;
+
+    document.querySelectorAll(".productos-tab").forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        document.querySelectorAll(".productos-tab").forEach(function (t) {
+          t.classList.remove("active");
+        });
+        tab.classList.add("active");
+        document.querySelectorAll(".productos-tab-panel").forEach(function (p) {
+          p.classList.remove("active");
+        });
+        document
+          .getElementById("productos-" + tab.dataset.productosTab)
+          .classList.add("active");
+      });
+    });
+
+    ["sync-host-input", "sync-port-input", "sync-user-input"].forEach(function (id) {
+      document.getElementById(id).addEventListener("input", function (e) {
+        e.target.dataset.touched = "1";
+      });
+    });
+
+    document.getElementById("sync-config-form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      var msg = document.getElementById("sync-config-msg");
+      var payload = {
+        liderpapel_sftp_host: document.getElementById("sync-host-input").value.trim(),
+        liderpapel_sftp_port: document.getElementById("sync-port-input").value.trim(),
+        liderpapel_sftp_user: document.getElementById("sync-user-input").value.trim(),
+      };
+      var pass = document.getElementById("sync-pass-input").value;
+      if (pass) payload.liderpapel_sftp_pass = pass;
+
+      try {
+        var res = await fetch("/api/sync/liderpapel/config", {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify(payload),
+        });
+        var data = await res.json();
+        msg.hidden = false;
+        msg.textContent = data.success ? "✓ Guardado" : data.error || "Error";
+        msg.style.color = data.success ? "var(--accent)" : "var(--error)";
+        document.getElementById("sync-pass-input").value = "";
+        loadSyncStatus();
+      } catch {
+        msg.hidden = false;
+        msg.textContent = "Error de conexión";
+        msg.style.color = "var(--error)";
+      }
+    });
+
+    document.getElementById("sync-run-btn").addEventListener("click", async function () {
+      var btn = document.getElementById("sync-run-btn");
+      var msg = document.getElementById("sync-run-msg");
+      btn.disabled = true;
+      msg.hidden = false;
+      msg.textContent = "Sincronizando…";
+      msg.style.color = "var(--text-muted)";
+      try {
+        var res = await fetch("/api/sync/liderpapel/run", {
+          method: "POST",
+          headers: authHeaders(),
+        });
+        var data = await res.json();
+        if (data.success) {
+          msg.textContent = "✓ " + data.count + " productos sincronizados";
+          msg.style.color = "var(--accent)";
+          loadProductsList();
+        } else {
+          msg.textContent = data.error || "Error en la sincronización";
+          msg.style.color = "var(--error)";
+        }
+        loadSyncStatus();
+      } catch {
+        msg.textContent = "Error de conexión";
+        msg.style.color = "var(--error)";
+      } finally {
+        btn.disabled = false;
+      }
+    });
   }
 });

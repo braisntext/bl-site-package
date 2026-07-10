@@ -1,0 +1,48 @@
+---
+layout: base.njk
+navActive: productos
+permalink: "/productos/index.html"
+---
+<main class="site-page"><div class="site-page-inner">
+  <h1 class="reveal">Catálogo</h1>
+  <p class="site-page-subtitle reveal">Reserva online y recoge en tienda.</p>
+
+  {%- if not products.length %}
+  <p class="site-empty">Aún no hay productos disponibles.</p>
+  {%- else %}
+  {%- if productCategories.length %}
+  <div class="category-pills" id="category-pills">
+    <button type="button" class="category-pill active" data-category="all">Todos</button>
+    {%- for category in productCategories %}
+    <button type="button" class="category-pill" data-category="{{ category }}">{{ category }}</button>
+    {%- endfor %}
+  </div>
+  {%- endif %}
+
+  <div class="product-grid" id="product-grid">
+    {%- for product in products %}
+    <article class="product-card" data-category="{{ product.category }}">
+      <a href="/productos/{{ product.slug }}" class="product-card-image">
+        <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy" onerror="this.onerror=null;this.src='/img/placeholder-product.svg';">
+      </a>
+      <div class="product-card-body">
+        <h2><a href="/productos/{{ product.slug }}">{{ product.name }}</a></h2>
+        <span class="product-price">{{ product.priceDisplay }}</span>
+        {%- if not product.inStock %}
+        <span class="product-stock-badge out">Agotado</span>
+        {%- endif %}
+        <button
+          type="button"
+          class="site-btn product-add-btn"
+          data-add-to-cart
+          data-sku="{{ product.sku }}"
+          data-name="{{ product.name }}"
+          data-price-cents="{{ product.price_cents }}"
+          {%- if not product.inStock %} disabled{% endif %}
+        >Añadir</button>
+      </div>
+    </article>
+    {%- endfor %}
+  </div>
+  {%- endif %}
+</div></main>

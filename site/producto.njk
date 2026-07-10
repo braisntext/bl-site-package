@@ -1,0 +1,61 @@
+---
+layout: base.njk
+navActive: productos
+pagination:
+  data: products
+  size: 1
+  alias: product
+permalink: "/productos/{{ product.slug }}.html"
+eleventyComputed:
+  title: "{{ product.name }}"
+  description: "{{ product.name }}"
+---
+{%- set productLd = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": product.name,
+  "description": product.name,
+  "image": product.image_url,
+  "sku": product.sku,
+  "offers": {
+    "@type": "Offer",
+    "priceCurrency": "EUR",
+    "price": (product.price_cents / 100),
+    "availability": ("https://schema.org/InStock" if product.inStock else "https://schema.org/OutOfStock")
+  }
+} -%}
+<script type="application/ld+json">{{ productLd | dump | safe }}</script>
+<main class="site-page"><div class="site-page-inner site-post-content">
+  <a href="/productos" class="site-back-link">← Volver al catálogo</a>
+  <div class="product-detail">
+    <div class="product-detail-image">
+      <img src="{{ product.image_url }}" alt="{{ product.name }}" onerror="this.onerror=null;this.src='/img/placeholder-product.svg';">
+    </div>
+    <div class="product-detail-info">
+      <h1>{{ product.name }}</h1>
+      {%- if product.category %}
+      <span class="product-detail-category">{{ product.category }}</span>
+      {%- endif %}
+      <span class="product-price product-detail-price">{{ product.priceDisplay }}</span>
+      {%- if not product.inStock %}
+      <span class="product-stock-badge out">Agotado</span>
+      {%- endif %}
+      {%- if product.descriptionHtml %}
+      <div class="site-post-body product-detail-desc">{{ product.descriptionHtml | safe }}</div>
+      {%- endif %}
+      <div class="product-detail-actions">
+        <input type="number" min="1" value="1" class="product-qty-input" id="product-qty" {%- if not product.inStock %} disabled{% endif %}>
+        <button
+          type="button"
+          class="site-btn product-add-btn"
+          data-add-to-cart
+          data-sku="{{ product.sku }}"
+          data-name="{{ product.name }}"
+          data-price-cents="{{ product.price_cents }}"
+          data-qty-input="product-qty"
+          {%- if not product.inStock %} disabled{% endif %}
+        >Añadir al carrito</button>
+      </div>
+    </div>
+  </div>
+</div></main>
