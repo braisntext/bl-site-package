@@ -470,6 +470,15 @@ document.addEventListener("DOMContentLoaded", function () {
           whatsappNumberInput.value = cfg.whatsapp_number || "";
         }
 
+        ["legal_name", "legal_id", "legal_address", "legal_email"].forEach(
+          function (key) {
+            var input = document.getElementById(
+              key.replace(/_/g, "-") + "-input",
+            );
+            if (input) input.value = cfg[key] || "";
+          },
+        );
+
         if (cfg.logo_ext) {
           var img = document.getElementById("logo-preview");
           img.src = "/uploads/logo." + cfg.logo_ext + "?t=" + Date.now();
@@ -668,6 +677,45 @@ document.addEventListener("DOMContentLoaded", function () {
         var payload = {
           whatsapp_number: document
             .getElementById("whatsapp-number-input")
+            .value.trim(),
+        };
+
+        try {
+          var res = await fetch("/api/site/texts", {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify(payload),
+          });
+          var data = await res.json();
+          msg.textContent = data.success ? "✓ Guardado" : data.error || "Error";
+          msg.style.color = data.success ? "var(--accent)" : "var(--error)";
+          msg.style.display = "inline";
+          if (data.success) {
+            siteConfig = Object.assign(siteConfig, payload);
+          }
+          setTimeout(function () {
+            msg.style.display = "none";
+          }, 2500);
+        } catch {
+          msg.textContent = "Error de conexión";
+          msg.style.color = "var(--error)";
+          msg.style.display = "inline";
+        }
+      });
+
+    // Legal data settings (privacidad / aviso legal pages)
+    document
+      .getElementById("save-legal-btn")
+      .addEventListener("click", async function () {
+        var msg = document.getElementById("save-legal-msg");
+        var payload = {
+          legal_name: document.getElementById("legal-name-input").value.trim(),
+          legal_id: document.getElementById("legal-id-input").value.trim(),
+          legal_address: document
+            .getElementById("legal-address-input")
+            .value.trim(),
+          legal_email: document
+            .getElementById("legal-email-input")
             .value.trim(),
         };
 

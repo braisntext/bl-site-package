@@ -59,6 +59,10 @@ router.post("/texts", requireAuth, (req, res) => {
     "notify_email",
     "ai_model",
     "whatsapp_number",
+    "legal_name",
+    "legal_id",
+    "legal_address",
+    "legal_email",
   ];
   for (const key of allowed) {
     if (req.body[key] !== undefined) setConfig(key, req.body[key]);

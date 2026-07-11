@@ -1,0 +1,37 @@
+---
+layout: base.njk
+title: "Política de Privacidad"
+description: "Política de privacidad: qué datos recogemos, con qué finalidad, cuánto los conservamos y cómo ejercer tus derechos RGPD."
+permalink: "/privacidad.html"
+---
+<main class="site-page"><div class="site-page-inner">
+  <h1 class="reveal">Política de Privacidad</h1>
+
+  <div class="site-page-desc reveal" style="text-align:left;max-width:720px;margin-inline:auto;">
+
+    <h2>1. Responsable del tratamiento</h2>
+    <p>{{ site.legal_name or site.company_name or "El titular de este sitio web" }}{% if site.legal_id %}, con NIF/CIF {{ site.legal_id }}{% endif %}{% if site.legal_address %}, domicilio en {{ site.legal_address }}{% endif %}.
+    {% if site.legal_email %}Contacto: <a href="mailto:{{ site.legal_email }}">{{ site.legal_email }}</a>.{% else %}Puedes contactarnos a través del <a href="/contacto">formulario de contacto</a>.{% endif %}</p>
+
+    <h2>2. Datos que recogemos</h2>
+    <p>Recogemos únicamente los datos que nos facilitas directamente:</p>
+    <ul>
+      <li><strong>Formulario de contacto:</strong> nombre, email y mensaje.</li>
+      <li><strong>Reservas de productos</strong> (si usas el catálogo): nombre, datos de contacto y productos reservados.</li>
+    </ul>
+    <p>No utilizamos cookies de seguimiento ni analítica de terceros. La web guarda una preferencia técnica en el <em>localStorage</em> de tu navegador (aviso de cookies aceptado y modo claro/oscuro); esa información permanece en tu dispositivo.</p>
+
+    <h2>3. Finalidad y base legal</h2>
+    <p>Usamos tus datos exclusivamente para responder a tu consulta o gestionar tu reserva. La base legal es tu consentimiento al enviar el formulario y, en el caso de las reservas, la gestión de la relación precontractual.</p>
+
+    <h2>4. Conservación</h2>
+    <p>Tus mensajes y reservas se almacenan en la base de datos de este sitio el tiempo necesario para gestionarlos. Puedes solicitar su supresión en cualquier momento.</p>
+
+    <h2>5. Terceros</h2>
+    <p>Si está configurado el aviso por email, los mensajes se remiten a través del proveedor de correo del titular, que actúa como encargado del tratamiento. No cedemos tus datos a ningún otro tercero.</p>
+
+    <h2>6. Tus derechos (RGPD)</h2>
+    <p>Puedes ejercer en cualquier momento los derechos de acceso, rectificación, supresión, oposición y portabilidad {% if site.legal_email %}escribiendo a <a href="mailto:{{ site.legal_email }}">{{ site.legal_email }}</a>{% else %}a través del <a href="/contacto">formulario de contacto</a>{% endif %}. También puedes presentar una reclamación ante la <strong>AEPD</strong> (aepd.es).</p>
+
+  </div>
+</div></main>
