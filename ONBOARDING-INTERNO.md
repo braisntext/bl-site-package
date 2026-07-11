@@ -52,8 +52,9 @@ En Zeabur → tu servicio → Variables:
 - [ ] Mi sitio web → Logo → subir logo del cliente
 - [ ] Mi sitio web → Páginas → rellenar textos de las 5 páginas (o usar el agente)
 - [ ] Mi sitio web → Notificaciones → configurar email del cliente
+- [ ] Mi sitio web → Datos legales → rellenar razón social, NIF/CIF, domicilio y email legal (del formulario, sección 1a). Estos datos los tecleas tú o el cliente — el agente de chat no puede escribirlos, a propósito
 - [ ] Blog → crear 2-3 artículos iniciales con el agente
-- [ ] Verificar que la web pública muestra el contenido correctamente
+- [ ] Verificar que la web pública muestra el contenido correctamente, incluidas `/privacidad` y `/condiciones` (con datos legales, o con el texto genérico si el cliente aún no los tiene)
 
 **Si el cliente contrató agentes adicionales** (Content Gap Hunter, SEO/GEO On-Site, Infographic Engineer, Off-Site GEO Scout): estos **no tienen aprovisionamiento automático todavía** — no hay nada que activar aquí. Hoy el alta es manual vía un perfil de Hermes dedicado (ver `BIGLOBSTER_SETUP.md` en el repo `hermes-sandbox`); contacta con quien gestione Hermes para darlo de alta caso por caso.
 

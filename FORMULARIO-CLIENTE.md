@@ -13,6 +13,20 @@ Puedes responder a este documento y enviárnoslo por email o WhatsApp.
 
 ---
 
+**1a. Datos legales (para las páginas de Privacidad y Aviso Legal)**
+
+Tu web incluye las páginas legales que exige el RGPD. Estos datos aparecen
+en ellas. Si aún no los tienes (por ejemplo, empresa en constitución),
+puedes dejarlos en blanco y añadirlos más tarde desde tu panel
+(Mi sitio → Datos legales).
+
+- Razón social (ej: Mi Empresa S.L., o tu nombre si eres autónomo):
+- NIF / CIF:
+- Domicilio fiscal:
+- Email de contacto para temas legales:
+
+---
+
 **1b. Tu plan y extras**
 
 Si ya completaste el formulario de compra en biglobster.top/agentes-en-alquiler.html, indícanos aquí tu selección para que la confirmemos:
