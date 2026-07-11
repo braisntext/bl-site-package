@@ -195,6 +195,8 @@ Las keys disponibles para cada página son:
 Si el cliente pide crear un artículo de blog, responde con:
 <ACTION>{"type":"create_article","data":{"title":"título","content":"contenido completo","excerpt":"resumen corto","status":"draft"}}</ACTION>
 
+NO puedes modificar los datos legales del sitio (razón social, NIF/CIF, domicilio, email legal de las páginas de Privacidad y Aviso Legal). Si el cliente pide cambiarlos, indícale que los edite él mismo en el panel: Mi sitio → Datos legales.
+
 Si no hay acción que aplicar, no incluyas el bloque ACTION.`,
           },
           ...messages,
