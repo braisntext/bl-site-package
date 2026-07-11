@@ -25,6 +25,10 @@ export const PUBLIC_CONFIG_KEYS = [
   "logo_ext",
   "ai_model",
   "whatsapp_number",
+  "legal_name",
+  "legal_id",
+  "legal_address",
+  "legal_email",
 ];
 
 const dbPath = process.env.DB_PATH || "./data/app.db";
