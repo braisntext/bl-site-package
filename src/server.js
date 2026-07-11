@@ -1,5 +1,4 @@
 import express from "express";
-import cors from "cors";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { mkdirSync } from "node:fs";
@@ -23,7 +22,8 @@ const PORT = process.env.PORT || 3000;
 const uploadsDir = join(__dirname, "../data/uploads");
 mkdirSync(uploadsDir, { recursive: true });
 
-app.use(cors());
+// No CORS middleware on purpose: site, panel and every /api consumer are
+// served from this same origin, so cross-origin API access stays blocked.
 app.use(express.json());
 
 app.use((req, res, next) => {
@@ -32,8 +32,15 @@ app.use((req, res, next) => {
     // img-src allows Liderpapel's product-image host so hotlinked catalog
     // images aren't silently blocked. TODO: confirm the exact media host
     // once real MultimediaLinks URLs are seen (see src/sync/liderpapel/mapping.js).
-    "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.fontshare.com; font-src 'self' https://fonts.gstatic.com https://api.fontshare.com; img-src 'self' data: blob: https://*.liderpapel.com; connect-src 'self' https://openrouter.ai",
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.fontshare.com; font-src 'self' https://fonts.gstatic.com https://api.fontshare.com; img-src 'self' data: blob: https://*.liderpapel.com; connect-src 'self' https://openrouter.ai; frame-ancestors 'none'",
   );
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  if (process.env.NODE_ENV === "production") {
+    res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  }
   next();
 });
 
