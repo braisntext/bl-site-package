@@ -1,5 +1,4 @@
 import express from "express";
-import cors from "cors";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { mkdirSync } from "node:fs";
@@ -23,7 +22,8 @@ const PORT = process.env.PORT || 3000;
 const uploadsDir = join(__dirname, "../data/uploads");
 mkdirSync(uploadsDir, { recursive: true });
 
-app.use(cors());
+// No CORS middleware on purpose: site, panel and every /api consumer are
+// served from this same origin, so cross-origin API access stays blocked.
 app.use(express.json());
 
 app.use((req, res, next) => {
