@@ -20,16 +20,36 @@ const { startLiderpapelScheduler } = await import(
 startLiderpapelScheduler();
 console.log("4/4 scheduler ok");
 
+console.log("5/6 importando los routers de la API (uno a uno)...");
+const routers = [
+  "./src/api/auth.js",
+  "./src/api/chat.js",
+  "./src/api/blog.js",
+  "./src/api/contact.js",
+  "./src/api/setup.js",
+  "./src/api/site.js",
+  "./src/api/products.js",
+  "./src/api/reservations.js",
+  "./src/api/sync.js",
+];
+for (const path of routers) {
+  console.log(`    importando ${path}...`);
+  await import(path);
+  console.log(`    ${path} ok`);
+}
+console.log("5/6 routers ok");
+
 console.log(
-  "5/5 probando app.listen() en el mismo PORT que usaría Passenger...",
+  "6/6 probando app.listen() en el mismo PORT que usaría Passenger...",
 );
 console.log("    process.env.PORT =", JSON.stringify(process.env.PORT));
 const express = (await import("express")).default;
 const testApp = express();
-const PORT = process.env.PORT || 3000;
+// Puerto 0 = que el SO asigne uno libre, para no chocar con ningún proceso
+// que ya esté escuchando en el 3000 (solo probamos que Express puede bindear).
 await new Promise((resolve, reject) => {
-  const server = testApp.listen(PORT, () => {
-    console.log("5/5 listen ok, escuchando en", server.address());
+  const server = testApp.listen(0, () => {
+    console.log("6/6 listen ok, escuchando en", server.address());
     server.close(() => resolve());
   });
   server.on("error", (err) => reject(err));
