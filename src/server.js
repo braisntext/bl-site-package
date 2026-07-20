@@ -41,6 +41,15 @@ mkdirSync(uploadsDir, { recursive: true });
 // served from this same origin, so cross-origin API access stays blocked.
 app.use(express.json());
 
+// En subdominios de staging (STAGING=true en las variables de entorno),
+// evita que buscadores indexen el contenido sin necesitar autenticación.
+if (process.env.STAGING === "true") {
+  app.use((req, res, next) => {
+    res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    next();
+  });
+}
+
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
