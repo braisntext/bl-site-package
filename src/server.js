@@ -1,7 +1,7 @@
 import express from "express";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { getConfig } from "./db/database.js";
 import { buildOnStartup } from "./build/rebuild.js";
 import authRouter from "./api/auth.js";
@@ -18,6 +18,21 @@ import { startLiderpapelScheduler } from "./sync/liderpapel/scheduler.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// DEBUG TEMPORAL — diagnóstico de arranque en Passenger/Plesk. Borrar este
+// bloque (y src/../data/boot-debug.txt) una vez resuelto el despliegue.
+try {
+  const passengerEnv = Object.fromEntries(
+    Object.entries(process.env).filter(([k]) => k.toUpperCase().includes("PASSENGER")),
+  );
+  mkdirSync(join(__dirname, "../data"), { recursive: true });
+  writeFileSync(
+    join(__dirname, "../data/boot-debug.txt"),
+    JSON.stringify({ at: new Date().toISOString(), PORT: process.env.PORT ?? null, cwd: process.cwd(), passengerEnv }, null, 2),
+  );
+} catch (err) {
+  console.error("DEBUG boot-debug.txt failed:", err.message);
+}
 
 const uploadsDir = join(__dirname, "../data/uploads");
 mkdirSync(uploadsDir, { recursive: true });
