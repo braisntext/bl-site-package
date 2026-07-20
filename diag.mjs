@@ -20,5 +20,20 @@ const { startLiderpapelScheduler } = await import(
 startLiderpapelScheduler();
 console.log("4/4 scheduler ok");
 
+console.log(
+  "5/5 probando app.listen() en el mismo PORT que usaría Passenger...",
+);
+console.log("    process.env.PORT =", JSON.stringify(process.env.PORT));
+const express = (await import("express")).default;
+const testApp = express();
+const PORT = process.env.PORT || 3000;
+await new Promise((resolve, reject) => {
+  const server = testApp.listen(PORT, () => {
+    console.log("5/5 listen ok, escuchando en", server.address());
+    server.close(() => resolve());
+  });
+  server.on("error", (err) => reject(err));
+});
+
 console.log("TODO OK — el problema no está en el arranque de la app");
 process.exit(0);
