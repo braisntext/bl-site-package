@@ -7,7 +7,11 @@ FROM node:20-alpine AS build
 WORKDIR /app
 RUN apk add --no-cache python3 make g++
 COPY package*.json ./
-RUN npm install --omit=dev
+# npm ci installs the exact tree from the committed package-lock.json, so
+# every client build is reproducible. --omit=dev keeps the image lean;
+# @11ty/eleventy is a runtime dependency (see src/build/rebuild.js), so it
+# stays installed.
+RUN npm ci --omit=dev
 
 # Runtime stage: lean image, no build tools. The compiled better-sqlite3 binary
 # rides along in node_modules (same base image → musl-compatible).

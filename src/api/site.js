@@ -10,19 +10,29 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const uploadsDir = join(__dirname, "../../data/uploads");
 mkdirSync(uploadsDir, { recursive: true });
 
+// Accepted logo formats. SVG is intentionally excluded: an SVG with an inline
+// <script> served from /uploads (same-origin, and the CSP allows
+// script-src 'unsafe-inline') is a stored-XSS vector. Only raster formats are
+// allowed. The extension is taken from this validated-mimetype map, never from
+// the client-controlled originalname.
+const LOGO_MIME_EXT = {
+  "image/png": "png",
+  "image/jpeg": "jpg",
+  "image/webp": "webp",
+};
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadsDir),
   filename: (req, file, cb) => {
-    const ext = file.originalname.split(".").pop();
-    cb(null, "logo." + ext);
+    cb(null, "logo." + LOGO_MIME_EXT[file.mimetype]);
   },
 });
 const upload = multer({
   storage,
   limits: { fileSize: 2 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    if (/^image\/(png|jpeg|svg\+xml|webp)$/.test(file.mimetype)) cb(null, true);
-    else cb(new Error("Solo se permiten imágenes PNG, JPG, SVG o WebP"));
+    if (LOGO_MIME_EXT[file.mimetype]) cb(null, true);
+    else cb(new Error("Solo se permiten imágenes PNG, JPG o WebP"));
   },
 });
 
@@ -70,13 +80,21 @@ router.post("/texts", requireAuth, (req, res) => {
   res.json({ success: true });
 });
 
-// POST /api/site/logo — upload logo
-router.post("/logo", requireAuth, upload.single("logo"), (req, res) => {
-  if (!req.file)
-    return res.status(400).json({ error: "No se recibió ningún archivo" });
-  const ext = req.file.originalname.split(".").pop();
-  setConfig("logo_ext", ext);
-  res.json({ success: true, path: "/uploads/logo." + ext });
+// POST /api/site/logo — upload logo. The multer error callback turns a
+// rejected upload (wrong type, too large) into a clean 400 instead of the
+// default 500 HTML error page.
+router.post("/logo", requireAuth, (req, res) => {
+  upload.single("logo")(req, res, (err) => {
+    if (err)
+      return res.status(400).json({
+        error: err.message || "No se pudo subir el archivo",
+      });
+    if (!req.file)
+      return res.status(400).json({ error: "No se recibió ningún archivo" });
+    const ext = LOGO_MIME_EXT[req.file.mimetype];
+    setConfig("logo_ext", ext);
+    res.json({ success: true, path: "/uploads/logo." + ext });
+  });
 });
 
 // GET /api/site/models?q=term — proxy OpenRouter model list
