@@ -38,6 +38,7 @@ router.get("/config", (req, res) => {
 // POST /api/site/texts — save page texts
 router.post("/texts", requireAuth, (req, res) => {
   const allowed = [
+    "site_url",
     "page_index_title",
     "page_index_subtitle",
     "page_index_desc",

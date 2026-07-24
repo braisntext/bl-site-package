@@ -481,6 +481,10 @@ document.addEventListener("DOMContentLoaded", function () {
         if (whatsappNumberInput) {
           whatsappNumberInput.value = cfg.whatsapp_number || "";
         }
+        var siteUrlInput = document.getElementById("site-url-input");
+        if (siteUrlInput) {
+          siteUrlInput.value = cfg.site_url || "";
+        }
 
         ["legal_name", "legal_id", "legal_address", "legal_email"].forEach(
           function (key) {
@@ -690,6 +694,41 @@ document.addEventListener("DOMContentLoaded", function () {
           whatsapp_number: document
             .getElementById("whatsapp-number-input")
             .value.trim(),
+        };
+
+        try {
+          var res = await fetch("/api/site/texts", {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify(payload),
+          });
+          var data = await res.json();
+          msg.textContent = data.success ? "✓ Guardado" : data.error || "Error";
+          msg.style.color = data.success ? "var(--accent)" : "var(--error)";
+          msg.style.display = "inline";
+          if (data.success) {
+            siteConfig = Object.assign(siteConfig, payload);
+          }
+          setTimeout(function () {
+            msg.style.display = "none";
+          }, 2500);
+        } catch {
+          msg.textContent = "Error de conexión";
+          msg.style.color = "var(--error)";
+          msg.style.display = "inline";
+        }
+      });
+
+    // Site URL setting (canonical / Open Graph / sitemap base)
+    document
+      .getElementById("save-siteurl-btn")
+      .addEventListener("click", async function () {
+        var msg = document.getElementById("save-siteurl-msg");
+        var payload = {
+          site_url: document
+            .getElementById("site-url-input")
+            .value.trim()
+            .replace(/\/+$/, ""),
         };
 
         try {

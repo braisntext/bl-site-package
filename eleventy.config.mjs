@@ -11,6 +11,17 @@ export default function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy({ "web/cart.js": "cart.js" });
   eleventyConfig.addPassthroughCopy({ "web/img": "img" });
 
+  // Builds an absolute canonical URL from a page path and the configured
+  // site_url. Normalizes the served form (drops "index.html" and the ".html"
+  // extension) so canonical/og:url/sitemap all agree on one clean URL and
+  // duplicate-content dilution between /x and /x.html is avoided. Returns the
+  // bare path when no base is configured (site_url unset).
+  eleventyConfig.addFilter("absoluteUrl", (path, base) => {
+    const clean = String(path).replace(/index\.html$/, "").replace(/\.html$/, "");
+    if (!base) return clean;
+    return String(base).replace(/\/+$/, "") + clean;
+  });
+
   return {
     dir: {
       input: "site",
