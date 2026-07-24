@@ -8,6 +8,7 @@ import { scheduleRebuild } from "../build/rebuild.js";
 export const PUBLIC_CONFIG_KEYS = [
   "company_name",
   "sector",
+  "site_url",
   "page_index_title",
   "page_index_subtitle",
   "page_index_desc",

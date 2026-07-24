@@ -1,0 +1,12 @@
+---
+permalink: /sitemap.xml
+eleventyExcludeFromCollections: true
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{%- if site.site_url and not site.staging %}
+{%- for item in collections.all %}
+  <url><loc>{{ item.url | absoluteUrl(site.site_url) }}</loc></url>
+{%- endfor %}
+{%- endif %}
+</urlset>

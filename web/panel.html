@@ -885,6 +885,45 @@
               </div>
 
               <div class="misite-block">
+                <h3>Dirección del sitio (SEO)</h3>
+                <p class="misite-hint">
+                  La URL pública definitiva de tu web (por ejemplo
+                  <code>https://miempresa.com</code>). Se usa para generar las
+                  etiquetas canonical, Open Graph y el sitemap.xml, que evitan
+                  contenido duplicado y ayudan al posicionamiento. Sin barra
+                  final.
+                </p>
+
+                <div class="misite-page-form" style="max-width: 560px">
+                  <div>
+                    <label for="site-url-input">URL del sitio</label>
+                    <input
+                      type="url"
+                      id="site-url-input"
+                      placeholder="https://miempresa.com"
+                    />
+                  </div>
+                </div>
+
+                <div
+                  style="
+                    margin-top: 1.5rem;
+                    display: flex;
+                    gap: 1rem;
+                    align-items: center;
+                  "
+                >
+                  <button class="btn-primary-sm" id="save-siteurl-btn">
+                    Guardar URL
+                  </button>
+                  <span
+                    id="save-siteurl-msg"
+                    style="font-size: 0.8125rem; display: none"
+                  ></span>
+                </div>
+              </div>
+
+              <div class="misite-block">
                 <h3>Botón de WhatsApp</h3>
                 <p class="misite-hint">
                   Si lo rellenas, aparecerá un botón flotante de WhatsApp en
