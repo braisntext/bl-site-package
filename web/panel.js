@@ -2,6 +2,18 @@ document.addEventListener("DOMContentLoaded", function () {
   // ── AUTH ──────────────────────────────────────────────────────────
   var token = null;
 
+  // Escape before interpolating any user-supplied value into innerHTML.
+  // Contact messages are public input, so an unescaped name/email/message
+  // would be stored XSS executing in the authenticated panel.
+  function escapeHtml(str) {
+    return String(str == null ? "" : str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
   var loginScreen = document.getElementById("login-screen");
   var panelApp = document.getElementById("panel-app");
   var loginForm = document.getElementById("login-form");
@@ -346,7 +358,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 : '<span style="background:#f3f4f6;color:#6b7280;padding:2px 8px;border-radius:20px;font-size:0.75rem;font-weight:600">Borrador</span>';
             return (
               '<div class="article-row"><div class="article-row-info"><span class="article-row-title">' +
-              p.title +
+              escapeHtml(p.title) +
               "</span>" +
               badge +
               '</div><div class="article-row-actions"><button class="btn-ghost-sm" data-edit="' +
@@ -411,13 +423,13 @@ document.addEventListener("DOMContentLoaded", function () {
           .map(function (m) {
             return (
               '<article class="message-card"><div class="message-card-header"><span class="message-card-name">' +
-              m.name +
+              escapeHtml(m.name) +
               '</span><span class="message-card-email">' +
-              m.email +
+              escapeHtml(m.email) +
               '</span><span class="message-card-date">' +
               new Date(m.created_at).toLocaleString("es-ES") +
               '</span></div><div class="message-card-body">' +
-              m.message +
+              escapeHtml(m.message) +
               "</div></article>"
             );
           })

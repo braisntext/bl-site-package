@@ -1,9 +1,18 @@
 import { Router } from "express";
 import { requireAuth } from "../middleware/auth.js";
+import { rateLimit } from "../middleware/rateLimit.js";
 import db, { getConfig, setConfig } from "../db/database.js";
 import { scheduleRebuild } from "../build/rebuild.js";
 
 const router = Router();
+
+// Authenticated, but cap request rate so a leaked/shared panel password can't
+// drain the client's BYOK OpenRouter credit.
+const chatLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  message: "Demasiadas peticiones al asistente, espera un momento.",
+});
 const DEFAULT_AGENT_MODEL = "gpt-oss-20b:free";
 const FREE_MODELS_FALLBACK = [
   "gpt-oss-20b:free",
@@ -228,7 +237,7 @@ Si no hay acción que aplicar, no incluyas el bloque ACTION.`,
 }
 
 // POST /api/chat/send
-router.post("/send", requireAuth, async (req, res) => {
+router.post("/send", requireAuth, chatLimiter, async (req, res) => {
   const { message } = req.body;
   if (!message) return res.status(400).json({ error: "Mensaje requerido" });
 

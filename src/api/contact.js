@@ -2,8 +2,25 @@ import { Router } from "express";
 import nodemailer from "nodemailer";
 import db, { getConfig } from "../db/database.js";
 import { requireAuth } from "../middleware/auth.js";
+import { rateLimit } from "../middleware/rateLimit.js";
 
 const router = Router();
+
+// Public endpoint: cap volume to blunt spam/DB-flooding.
+const contactLimiter = rateLimit({ windowMs: 60 * 1000, max: 10 });
+
+const MAX_NAME = 200;
+const MAX_EMAIL = 200;
+const MAX_MESSAGE = 5000;
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 
 // GET /api/contact — inbox del panel
 router.get("/", requireAuth, (req, res) => {
@@ -17,7 +34,7 @@ router.get("/", requireAuth, (req, res) => {
 });
 
 // POST /api/contact — formulario público
-router.post("/", async (req, res) => {
+router.post("/", contactLimiter, async (req, res) => {
   const name = typeof req.body.name === "string" ? req.body.name.trim() : "";
   const email = typeof req.body.email === "string" ? req.body.email.trim() : "";
   const message =
@@ -27,6 +44,14 @@ router.post("/", async (req, res) => {
     return res
       .status(400)
       .json({ error: "name, email y message son obligatorios" });
+  }
+
+  if (
+    name.length > MAX_NAME ||
+    email.length > MAX_EMAIL ||
+    message.length > MAX_MESSAGE
+  ) {
+    return res.status(400).json({ error: "Uno de los campos es demasiado largo" });
   }
 
   db.prepare(
@@ -56,7 +81,7 @@ router.post("/", async (req, res) => {
         to: notifyEmail,
         subject: `Nuevo mensaje de contacto de ${name}`,
         text: `Nombre: ${name}\nEmail: ${email}\n\nMensaje:\n${message}`,
-        html: `<p><strong>Nombre:</strong> ${name}</p><p><strong>Email:</strong> ${email}</p><hr><p>${message.replace(/\n/g, "<br>")}</p>`,
+        html: `<p><strong>Nombre:</strong> ${escapeHtml(name)}</p><p><strong>Email:</strong> ${escapeHtml(email)}</p><hr><p>${escapeHtml(message).replace(/\n/g, "<br>")}</p>`,
       });
     } catch (err) {
       console.error("Error enviando email de notificación:", err.message);

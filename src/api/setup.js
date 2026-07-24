@@ -16,6 +16,18 @@ router.get("/status", (req, res) => {
 });
 
 router.post("/complete", (req, res) => {
+  // First-run only. Once setup has completed once, `jwt_secret` lives in config
+  // (set below, in both env- and wizard-password deploy modes), so its presence
+  // is a reliable "already configured" flag. Without this guard the endpoint is
+  // an unauthenticated takeover: anyone reaching the URL could reset the panel
+  // password and overwrite the client's OpenRouter key. To reconfigure, use the
+  // authenticated DELETE /api/setup/reset first.
+  if (getConfig("jwt_secret")) {
+    return res
+      .status(409)
+      .json({ error: "La instalación ya está configurada" });
+  }
+
   const { companyName, sector, panelPassword, openrouterApiKey } = req.body;
 
   if (!companyName || !sector || !panelPassword) {
