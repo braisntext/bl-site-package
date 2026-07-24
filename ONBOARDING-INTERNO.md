@@ -88,6 +88,16 @@ En Zeabur → tu servicio → Variables:
 
 ---
 
+## Actualizar el paquete en clientes ya activos
+
+Cuando hay un cambio en `bl-site-package` que hay que llevar a clientes que ya
+están en producción, **no se despliega directamente**. Se sigue el proceso
+staging-first descrito en [`RELEASE.md`](RELEASE.md): merge a `main` → auto-deploy
+en Zeabur (staging) → `scripts/smoke-test.sh` en verde → recién entonces, rollout
+a cada servidor de cliente (Plesk) con su propio smoke test.
+
+---
+
 ## Datos del cliente (rellenar por cada instancia)
 
 | Campo                | Valor                         |
