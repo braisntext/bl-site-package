@@ -2,8 +2,12 @@ import { Router } from "express";
 import nodemailer from "nodemailer";
 import db, { getConfig } from "../db/database.js";
 import { requireAuth } from "../middleware/auth.js";
+import { rateLimit } from "../middleware/rateLimit.js";
 
 const router = Router();
+
+// Public checkout endpoint: cap volume to blunt spam/DB-flooding.
+const reservationLimiter = rateLimit({ windowMs: 60 * 1000, max: 10 });
 
 const VALID_STATUSES = ["pending", "confirmed", "ready_for_pickup", "completed", "cancelled"];
 
@@ -26,7 +30,7 @@ router.get("/:id", requireAuth, (req, res) => {
 });
 
 // POST /api/reservations — public checkout submission
-router.post("/", async (req, res) => {
+router.post("/", reservationLimiter, async (req, res) => {
   const customer_name = typeof req.body.customer_name === "string" ? req.body.customer_name.trim() : "";
   const customer_email = typeof req.body.customer_email === "string" ? req.body.customer_email.trim() : "";
   const customer_phone = typeof req.body.customer_phone === "string" ? req.body.customer_phone.trim() : "";
